@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { MoonStar } from 'lucide-react';
 import { Onboarding } from './components/Onboarding';
 import { Home } from './components/Home';
+import { Auth } from './components/Auth';
 import { WakeupMode } from './components/WakeupMode';
 import { Progress } from './components/Progress';
 import { Ritual } from './components/Ritual';
@@ -13,19 +15,21 @@ import { TabMetodo } from './components/TabMetodo';
 import { TabFerramentas } from './components/TabFerramentas';
 import { TabEu } from './components/TabEu';
 import { useAppContext } from './hooks/useAppContext';
+import { useAuth } from './hooks/useAuth';
 import { isNightTime, isRitualTime } from './lib/storage';
 import type { WakeupEntry, TabId } from './lib/types';
 
 type Screen = 'home' | 'wakeup' | 'progress' | 'ritual' | 'faq' | 'daySummary';
 
 function App() {
-  const { state, isLoading, updateOnboarding, addWakeup, completeRitual, unlockAllDays, updateThemePreference, addDiaryEntry } = useAppContext();
+  const { user, isLoading: authLoading } = useAuth();
+  const { state, isLoading: appLoading, updateOnboarding, addWakeup, completeRitual, unlockAllDays, updateThemePreference, addDiaryEntry } = useAppContext();
   const [screen, setScreen] = useState<Screen>('home');
   const [activeTab, setActiveTab] = useState<TabId>('hoje');
   const [isNightMode, setIsNightMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [dayProgress, setDayProgress] = useState<Record<number, { completed: boolean; opened_at: string | null; completed_at: string | null }>>({});
+  const [isDevMode, setIsDevMode] = useState(false);
 
   useEffect(() => {
     if (state.themePreference === 'dark') {
@@ -46,9 +50,12 @@ function App() {
       localStorage.setItem('state_planoManutencao', 'true');
     }
     if (params.get('dev') === 'true') {
-      unlockAllDays();
+      if (!appLoading) {
+        unlockAllDays();
+      }
+      setIsDevMode(true);
     }
-  }, [unlockAllDays]);
+  }, [unlockAllDays, appLoading]);
 
   useEffect(() => {
     // Show paywall after day 7 completion
@@ -75,28 +82,13 @@ function App() {
     setScreen('home');
   };
 
-  const handleDayOpen = (day: number) => {
-    setDayProgress(prev => ({
-      ...prev,
-      [day]: { completed: false, opened_at: new Date().toISOString(), completed_at: null },
-    }));
-  };
-
-  const handleDayComplete = (day: number) => {
-    setDayProgress(prev => ({
-      ...prev,
-      [day]: { ...prev[day], completed: true, completed_at: new Date().toISOString() },
-    }));
-
-    // Unlock achievements
-    if (day === 1) unlockAchievement('dia-1');
-    if (day === 3) unlockAchievement('dia-3');
-    if (day === 7) {
-      unlockAchievement('dia-7');
-      // Show paywall after day 7
-      setTimeout(() => setPaywallOpen(true), 500);
-    }
-  };
+  // Achievements were unlocked here, let's keep them triggered elsewhere or we can use useEffect
+  useEffect(() => {
+    const p = state.contentProgress;
+    if (p['modulo1']?.concluido) unlockAchievement('dia-1');
+    if (p['modulo3']?.concluido) unlockAchievement('dia-3');
+    if (p['modulo7']?.concluido) unlockAchievement('dia-7');
+  }, [state.contentProgress]);
 
   const handleTabChange = (tab: TabId) => {
     setActiveTab(tab);
@@ -114,7 +106,7 @@ function App() {
   };
 
   // Loading screen
-  if (isLoading) {
+  if (authLoading || appLoading) {
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center ${isNightMode ? 'bg-gray-900' : 'bg-cream'}`}>
         <div className="w-20 h-20 bg-coral-400 rounded-full flex items-center justify-center mb-4">
@@ -126,6 +118,11 @@ function App() {
         <div className="w-8 h-8 border-4 border-coral-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // Not authenticated
+  if (!user && !isDevMode) {
+    return <Auth isNightMode={isNightMode} />;
   }
 
   // Onboarding if no data
@@ -213,11 +210,6 @@ function App() {
       {activeTab === 'metodo' && (
         <TabMetodo
           isNightMode={isNightMode}
-          currentDay={state.currentDay}
-          dayProgress={dayProgress}
-          onDayOpen={handleDayOpen}
-          onDayComplete={handleDayComplete}
-          onSaveDiary={addDiaryEntry}
         />
       )}
 
@@ -273,8 +265,5 @@ function App() {
     </div>
   );
 }
-
-// Missing import
-import { MoonStar } from 'lucide-react';
 
 export default App;

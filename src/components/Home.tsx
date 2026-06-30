@@ -4,6 +4,7 @@ import type { OnboardingData, WakeupEntry } from '../lib/types';
 import { useVibrate } from '../hooks/useVibrate';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { InstallPWA } from './InstallPWA';
 
 interface HomeProps {
   onboarding: OnboardingData;
@@ -54,7 +55,7 @@ const DAY_MESSAGES: Record<number, { title: string; message: string; tip: string
   6: {
     title: 'A Viragem',
     message: 'Quase uma semana completa. O sono está a mudar para melhor.',
-    tip: 'Olha para trás e compara com o Dia 1. O progresso é real. Estás quase lá — mais uma noite.',
+    tip: 'Olha para trás e compara com o Módulo 1. O progresso é real. Estás quase lá — mais uma noite.',
     emoji: '🌅',
   },
   7: {
@@ -142,8 +143,8 @@ export function Home({
   };
 
   const getDisplayDay = (): string => {
-    if (currentDay <= 7) return `Dia ${currentDay} de 7`;
-    return `Dia ${currentDay}`;
+    if (currentDay <= 7) return `Módulo ${currentDay} de 7`;
+    return `Módulo ${currentDay}`;
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -203,6 +204,8 @@ export function Home({
       </header>
 
       <main className="flex-1 flex flex-col px-4 py-4 pb-32">
+        <InstallPWA isNightMode={isNightMode} />
+        
         {/* Day Status Card */}
         <button
           onClick={() => { vibrate(50); onDaySummary(); }}
@@ -243,7 +246,7 @@ export function Home({
             </div>
             <div className="flex-1">
               <p className={`text-xs font-semibold ${isNightMode ? 'text-green-400' : 'text-green-600'}`}>
-                📉 {improvement}% menos despertares que o Dia 1
+                📉 {improvement}% menos despertares que o Módulo 1
               </p>
               <p className={`text-[10px] ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 O método está a funcionar. Continua assim!
@@ -306,7 +309,7 @@ export function Home({
                   {currentDay}
                 </p>
                 <p className="text-[10px] font-medium text-muted-foreground">
-                  Dias
+                  Módulo
                 </p>
               </div>
             </CardContent>

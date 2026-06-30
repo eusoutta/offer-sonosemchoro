@@ -286,7 +286,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           </p>
           <div className="bg-coral-50 border-2 border-coral-200 rounded-xl p-4 mb-8">
             <p className="text-center text-coral-600 font-semibold text-lg">
-              O teu Dia 1 comeca hoje.
+              O teu Módulo 1 comeca hoje.
             </p>
           </div>
           <button

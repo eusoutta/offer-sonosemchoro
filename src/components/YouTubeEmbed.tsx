@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Play, CheckCircle2 } from 'lucide-react';
 import { useVibrate } from '../hooks/useVibrate';
 
 interface YouTubeEmbedProps {
@@ -27,6 +27,8 @@ export function YouTubeEmbed({
   const [showVideo, setShowVideo] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
+  const isPlaceholder = videoId === 'PLACEHOLDER';
+
   const handleMarkComplete = () => {
     if (!markedComplete) {
       setMarkedComplete(true);
@@ -36,12 +38,28 @@ export function YouTubeEmbed({
   };
 
   const handlePlayClick = () => {
+    if (isPlaceholder) return;
     vibrate(30);
     setShowVideo(true);
   };
 
+  // Se for um placeholder (Módulos 8 a 14)
+  if (isPlaceholder) {
+    return (
+      <div className={`rounded-2xl overflow-hidden ${isNightMode ? 'bg-gray-800/50 border border-gray-700/30' : 'bg-gray-100 border border-gray-200'} shadow-sm`}>
+        <div className="relative flex flex-col items-center justify-center py-12 text-center group">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 ${isNightMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+            <Play className={`w-6 h-6 ml-1 ${isNightMode ? 'text-gray-500' : 'text-gray-400'}`} fill="currentColor" />
+          </div>
+          <p className={`font-semibold text-sm ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {title}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
     <div className={`rounded-2xl overflow-hidden ${isNightMode ? 'bg-gray-800/80 border border-gray-700/50' : 'bg-white border border-gray-100'} shadow-lg`}>
@@ -49,14 +67,17 @@ export function YouTubeEmbed({
       <div className={`p-3.5 border-b ${isNightMode ? 'border-gray-700/50' : 'border-gray-100'}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h4 className={`font-semibold text-sm leading-snug ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+            <h4 className={`font-semibold text-[15px] leading-snug ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
               {title}
             </h4>
             {channel && (
-              <p className={`text-xs mt-1 ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className={`text-[13px] mt-1 ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 {channel} {duration && `• ${duration}`}
               </p>
             )}
+            <p className={`text-[12px] mt-2 italic ${isNightMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Vídeo de uma consultora brasileira. Os conceitos aplicam-se ao teu bebé na mesma.
+            </p>
           </div>
           {markedComplete && (
             <div className="flex items-center gap-1 px-2.5 py-1 bg-green-500 text-white text-xs rounded-full font-semibold">
@@ -68,10 +89,10 @@ export function YouTubeEmbed({
       </div>
 
       {/* Video Frame */}
-      <div className="relative" style={{ paddingBottom: '56.25%' }}>
+      <div className="video-wrapper" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
         {showVideo ? (
           <iframe
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
             title={title}
             style={{
               position: 'absolute',
@@ -79,8 +100,8 @@ export function YouTubeEmbed({
               left: 0,
               width: '100%',
               height: '100%',
+              border: 0,
             }}
-            frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             onError={() => setLoadError(true)}
@@ -122,7 +143,6 @@ export function YouTubeEmbed({
 
       {/* Actions */}
       <div className={`p-3 flex items-center justify-end ${isNightMode ? 'bg-gray-800/50' : 'bg-gray-50/80'}`}>
-
         <button
           onClick={handleMarkComplete}
           disabled={markedComplete}

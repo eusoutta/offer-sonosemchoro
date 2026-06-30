@@ -122,12 +122,27 @@ export async function getState(): Promise<Partial<AppState>> {
   const lastRitualDate = localStorage.getItem('state_lastRitualDate');
   const planoManutencao = localStorage.getItem('state_planoManutencao');
   const themePreference = localStorage.getItem('state_themePreference');
+  const contentProgressStr = localStorage.getItem('state_contentProgress');
+  const quebrasDoRitmoStr = localStorage.getItem('state_quebrasDoRitmo');
+  const oldDayProgressStr = localStorage.getItem('state_dayProgress');
 
   state.currentDay = currentDay ? JSON.parse(currentDay) : 1;
   state.ritualCompletedToday = ritualCompletedToday ? JSON.parse(ritualCompletedToday) : false;
   state.lastRitualDate = lastRitualDate || null;
   state.planoManutencao = planoManutencao ? JSON.parse(planoManutencao) : false;
   state.themePreference = themePreference ? JSON.parse(themePreference) : 'auto';
+
+  let contentProgress = contentProgressStr ? JSON.parse(contentProgressStr) : {};
+  if (Object.keys(contentProgress).length === 0 && oldDayProgressStr) {
+    try {
+      const old = JSON.parse(oldDayProgressStr);
+      Object.keys(old).forEach((k) => {
+        contentProgress[`modulo${k}`] = old[k];
+      });
+    } catch (e) {}
+  }
+  state.contentProgress = contentProgress;
+  state.quebrasDoRitmo = quebrasDoRitmoStr ? JSON.parse(quebrasDoRitmoStr) : [];
 
   if (new URLSearchParams(window.location.search).get('manutencao') === 'ativo') {
     localStorage.setItem('state_planoManutencao', 'true');

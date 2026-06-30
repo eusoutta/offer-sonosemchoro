@@ -103,7 +103,7 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
             </div>
             <div>
               <p className={`font-bold text-lg ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
-                Dia {currentDay} {currentDay <= 7 ? 'de 7' : ''}
+                Módulo {currentDay} {currentDay <= 7 ? 'de 7' : ''}
               </p>
               <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 {new Date().toLocaleDateString('pt-MZ', { weekday: 'long' })}
@@ -191,7 +191,7 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
               <div className="flex items-center gap-2">
                 <BarChart3 className={`w-5 h-5 ${isNightMode ? 'text-coral-400' : 'text-coral-500'}`} />
                 <h2 className={`font-semibold ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
-                  Ultimos {Math.min(currentDay, 7)} Dias
+                  Ultimos {Math.min(currentDay, 7)} Módulos
                 </h2>
               </div>
               {improvement > 0 && (
@@ -245,7 +245,7 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
             {improvement > 0 && (
               <div className="text-center p-3 rounded-lg bg-green-500/10">
                 <p className="text-sm text-green-600 font-medium">
-                  {improvement}% menos despertares desde o Dia 1
+                  {improvement}% menos despertares desde o Módulo 1
                 </p>
               </div>
             )}
@@ -276,7 +276,7 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
             </div>
             <div className={`p-3 rounded-lg ${isNightMode ? 'bg-gray-700' : 'bg-coral-50'}`}>
               <p className={`text-2xl font-bold ${isNightMode ? 'text-white' : 'text-coral-600'}`}>
-                {bestNight > 0 ? `Dia ${bestNight}` : '-'}
+                {bestNight > 0 ? `Módulo ${bestNight}` : '-'}
               </p>
               <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 Melhor noite

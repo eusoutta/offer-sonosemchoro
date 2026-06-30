@@ -42,18 +42,23 @@ export interface VideoProgress {
   last_watched_at: string;
 }
 
-// ========== DAY PROGRESS (7-day method) ==========
-export interface DayProgress {
-  id: string;
-  user_id: string;
-  day_number: number;
-  opened_at: string | null;
-  completed_at: string | null;
-  textos_lidos: string[];
-  videos_vistos: string[];
-  checklist_marcada: string[];
-  audio_ouvido: boolean;
-  pilula_vista: boolean;
+// ========== MODULE PROGRESS (14-module method) ==========
+export interface ModuleProgress {
+  aberto: boolean;
+  concluido: boolean;
+  dataConclusao: string | null;
+  textosLidos: string[];
+  videosVistos: string[];
+  checklistMarcada: string[];
+  diarioEntrada: { texto: string; timestamp: string } | null;
+  audioOuvido: boolean;
+  pilulaVista: boolean;
+}
+
+export interface QuebraDoRitmo {
+  modulo: number;
+  dataPrevia: string;
+  dataReal: string;
 }
 
 // ========== DIARY ENTRIES ==========
@@ -112,7 +117,8 @@ export interface AppState {
   user: UserProfile | null;
   baby: BabyProfile | null;
   currentDay: number;
-  dayProgress: Record<number, DayProgress>;
+  contentProgress: Record<string, ModuleProgress>;
+  quebrasDoRitmo: QuebraDoRitmo[];
   wakeupHistory: WakeupEntry[];
   diaryEntries: DiaryEntry[];
   achievements: UserAchievement[];
@@ -179,30 +185,39 @@ export interface PilulaContent {
 // ========== METHOD VIDEOS (YouTube IDs) ==========
 export const METHOD_VIDEOS: Record<number, VideoContent[]> = {
   1: [
-    { id: 'v1a', youtube_id: 'puhAZ_SPbb4', title: 'Bebê que só dorme mamando — Como desassociar', channel: 'Consultora', duration: '~10min', watched: false },
-    { id: 'v1b', youtube_id: '2hdp77c4mFE', title: 'Meu bebê só dorme no peito: e agora?', channel: 'Macetes de Mãe', duration: '~12min', watched: false },
+    { id: 'v1a', youtube_id: 'Jgh2sqCNZLY', title: 'O que acontece quando os bebês dormem — Fisiologia do sono', channel: 'Pediatra', duration: '~10min', watched: false },
+    { id: 'v1b', youtube_id: 'qoZ8OVCNy3o', title: 'Sono do bebê — Entenda os ciclos do sono', channel: 'Consultora', duration: '~8min', watched: false },
   ],
   2: [
     { id: 'v2', youtube_id: 'fqiWoU612gY', title: 'Ritual do sono noturno — 8 passos', channel: 'Macetes de Mãe', duration: '~10min', watched: false },
   ],
   3: [
-    { id: 'v3', youtube_id: 'lDRYDpHtic4', title: 'Como ajustar o sono e a rotina — 7 dicas práticas', channel: 'Dra. Ana Jannuzzi', duration: '~12min', watched: false },
+    { id: 'v3', youtube_id: 'lDRYDpHtic4', title: 'Como ajustar sono e rotina — 7 dicas práticas', channel: 'Dra. Ana Jannuzzi', duration: '~12min', watched: false },
   ],
   4: [
-    { id: 'v4', youtube_id: 'RZWZSZt4Zv0', title: 'Passo a passo para desacostumar o bebê de dormir mamando', channel: 'Macetes de Mãe', duration: '~12min', watched: false },
+    { id: 'v4a', youtube_id: 'puhAZ_SPbb4', title: 'Bebê que só dorme mamando — Como desassociar', channel: 'Consultora', duration: '~10min', watched: false },
+    { id: 'v4b', youtube_id: 'RZWZSZt4Zv0', title: 'Passo a passo para desacostumar o bebê de dormir mamando', channel: 'Macetes de Mãe', duration: '~12min', watched: false },
   ],
   5: [
-    { id: 'v5', youtube_id: '_hYwvm6rQA8', title: 'Desmame noturno gentil e respeitoso', channel: 'Almanaque dos Pais', duration: '~14min', watched: false },
+    { id: 'v5', youtube_id: 'q2qewZEJqkk', title: 'Como acabar com o choro do bebê em minutos — técnica 5S', channel: 'Pediatra', duration: '~10min', watched: false },
   ],
   6: [
-    { id: 'v6', youtube_id: 'lFyevcNFfOo', title: '10 Dicas para o Desmame Noturno Gentil', channel: 'Consultora', duration: '~13min', watched: false },
+    { id: 'v6a', youtube_id: '_hYwvm6rQA8', title: 'Desmame noturno gentil e respeitoso — passo a passo', channel: 'Almanaque dos Pais', duration: '~14min', watched: false },
+    { id: 'v6b', youtube_id: 'lFyevcNFfOo', title: '10 dicas para o desmame noturno gentil', channel: 'Consultora', duration: '~13min', watched: false },
   ],
   7: [
-    { id: 'v7', youtube_id: 'MgG0Ob6ZxD0', title: 'Desmame noturno gentil — 8 dicas pra facilitar', channel: 'Macetes de Mãe', duration: '~8min', watched: false },
+    { id: 'v7', youtube_id: 'MgG0Ob6ZxD0', title: 'Desmame noturno gentil — 8 dicas pra facilitar a vida', channel: 'Macetes de Mãe', duration: '~8min', watched: false },
   ],
+  8: [{ id: 'v8-ph', youtube_id: 'PLACEHOLDER', title: 'Vídeo em breve', channel: '', duration: '', watched: false }],
+  9: [{ id: 'v9-ph', youtube_id: 'PLACEHOLDER', title: 'Vídeo em breve', channel: '', duration: '', watched: false }],
+  10: [{ id: 'v10-ph', youtube_id: 'PLACEHOLDER', title: 'Vídeo em breve', channel: '', duration: '', watched: false }],
+  11: [{ id: 'v11-ph', youtube_id: 'PLACEHOLDER', title: 'Vídeo em breve', channel: '', duration: '', watched: false }],
+  12: [{ id: 'v12-ph', youtube_id: 'PLACEHOLDER', title: 'Vídeo em breve', channel: '', duration: '', watched: false }],
+  13: [], // SEM vídeo conforme prompt (intimidade — só voz)
+  14: [{ id: 'v14-ph', youtube_id: 'PLACEHOLDER', title: 'Vídeo em breve', channel: '', duration: '', watched: false }],
 };
 
-// ========== DAY TITLES ==========
+// ========== MODULE TITLES ==========
 export const DAY_TITLES: Record<number, { title: string; subtitle: string }> = {
   1: { title: 'Entender', subtitle: 'A Semente' },
   2: { title: 'Preparar', subtitle: 'O Ambiente' },
@@ -211,6 +226,13 @@ export const DAY_TITLES: Record<number, { title: string; subtitle: string }> = {
   5: { title: 'Persistir', subtitle: 'O Pico' },
   6: { title: 'Aprofundar', subtitle: 'A Viragem' },
   7: { title: 'Consolidar', subtitle: 'A Conquista' },
+  8: { title: 'Quando o bebé fica doente', subtitle: 'Como pausar o método sem perder o ganho' },
+  9: { title: 'Viajar sem perder o ganho', subtitle: 'Adapta a Técnica fora de casa' },
+  10: { title: 'As regressões dos próximos meses', subtitle: 'Reconhecer e atravessar 4m, 8m, 12m, 18m, 2 anos' },
+  11: { title: 'Quando a família atrapalha', subtitle: 'Como ter a família a remar contigo' },
+  12: { title: 'Mãe trabalhadora', subtitle: 'Manter o sono quando o bebé fica na creche/avós' },
+  13: { title: 'O luto pelas noites de antes', subtitle: 'Saúde mental: sentir que perdeste a tua vida anterior é normal' },
+  14: { title: 'Co-sleeping seguro', subtitle: 'Para mães que escolhem manter a cama partilhada' },
 };
 
 // ========== ACHIEVEMENTS LIST ==========

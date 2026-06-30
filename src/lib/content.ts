@@ -330,6 +330,126 @@ Parabéns, mãe. 💛`,
       content: 'Investigação publicada no journal Pediatrics mostra que métodos de treino de sono com presença parental (como este) não têm efeitos negativos no apego, no comportamento, ou no desenvolvimento emocional do bebé — nem a curto nem a longo prazo. Tu fizeste a coisa certa.',
     },
   },
+
+  // ========== MÓDULO 8: DOENÇA ==========
+  8: {
+    textos: [
+      { id: 't8-1', title: 'Quando pausar e quando continuar', content: '[PLACEHOLDER — "Quando pausar e quando continuar"]' },
+      { id: 't8-2', title: 'Como retomar depois da doença', content: '[PLACEHOLDER — "Como retomar depois da doença"]' },
+    ],
+    checklist: [
+      { id: 'c8-1', text: '[PLACEHOLDER]' },
+      { id: 'c8-2', text: '[PLACEHOLDER]' },
+      { id: 'c8-3', text: '[PLACEHOLDER]' },
+      { id: 'c8-4', text: '[PLACEHOLDER]' },
+      { id: 'c8-5', text: '[PLACEHOLDER]' },
+    ],
+    diary_question: '[PLACEHOLDER]',
+    pilula: { title: 'Sabia que...', content: '[PLACEHOLDER]' },
+  },
+
+  // ========== MÓDULO 9: VIAJAR ==========
+  9: {
+    textos: [
+      { id: 't9-1', title: 'Preparar a viagem', content: '[PLACEHOLDER — "Preparar a viagem"]' },
+      { id: 't9-2', title: 'Voltar à rotina depois', content: '[PLACEHOLDER — "Voltar à rotina depois"]' },
+    ],
+    checklist: [
+      { id: 'c9-1', text: '[PLACEHOLDER]' },
+      { id: 'c9-2', text: '[PLACEHOLDER]' },
+      { id: 'c9-3', text: '[PLACEHOLDER]' },
+      { id: 'c9-4', text: '[PLACEHOLDER]' },
+      { id: 'c9-5', text: '[PLACEHOLDER]' },
+      { id: 'c9-6', text: '[PLACEHOLDER]' },
+    ],
+    diary_question: '[PLACEHOLDER]',
+    pilula: { title: 'Sabia que...', content: '[PLACEHOLDER]' },
+  },
+
+  // ========== MÓDULO 10: REGRESSÕES ==========
+  10: {
+    textos: [
+      { id: 't10-1', title: 'Regressão 1', content: '[PLACEHOLDER — uma por regressão]' },
+      { id: 't10-2', title: 'Regressão 2', content: '[PLACEHOLDER — uma por regressão]' },
+      { id: 't10-3', title: 'Regressão 3', content: '[PLACEHOLDER — uma por regressão]' },
+      { id: 't10-4', title: 'Regressão 4', content: '[PLACEHOLDER — uma por regressão]' },
+      { id: 't10-5', title: 'Regressão 5', content: '[PLACEHOLDER — uma por regressão]' },
+    ],
+    checklist: [
+      { id: 'c10-1', text: '[PLACEHOLDER]' },
+      { id: 'c10-2', text: '[PLACEHOLDER]' },
+      { id: 'c10-3', text: '[PLACEHOLDER]' },
+      { id: 'c10-4', text: '[PLACEHOLDER]' },
+    ],
+    diary_question: '',
+    pilula: { title: 'Sabia que...', content: '[PLACEHOLDER]' },
+  },
+
+  // ========== MÓDULO 11: FAMÍLIA ==========
+  11: {
+    textos: [
+      { id: 't11-1', title: 'Conversa franca com o companheiro', content: '[PLACEHOLDER — "Conversa franca com o companheiro"]' },
+      { id: 't11-2', title: 'Lidar com avós que criticam', content: '[PLACEHOLDER — "Lidar com avós que criticam"]' },
+      { id: 't11-3', title: 'Pedir ajuda concreta', content: '[PLACEHOLDER — "Pedir ajuda concreta"]' },
+    ],
+    checklist: [
+      { id: 'c11-1', text: '[PLACEHOLDER]' },
+      { id: 'c11-2', text: '[PLACEHOLDER]' },
+      { id: 'c11-3', text: '[PLACEHOLDER]' },
+      { id: 'c11-4', text: '[PLACEHOLDER]' },
+      { id: 'c11-5', text: '[PLACEHOLDER]' },
+    ],
+    diary_question: '[PLACEHOLDER]',
+    pilula: { title: 'Sabia que...', content: '[PLACEHOLDER]' },
+  },
+
+  // ========== MÓDULO 12: MÃE TRABALHADORA ==========
+  12: {
+    textos: [
+      { id: 't12-1', title: 'Texto 1', content: '[PLACEHOLDER]' },
+      { id: 't12-2', title: 'Texto 2', content: '[PLACEHOLDER]' },
+    ],
+    checklist: [
+      { id: 'c12-1', text: '[PLACEHOLDER]' },
+      { id: 'c12-2', text: '[PLACEHOLDER]' },
+      { id: 'c12-3', text: '[PLACEHOLDER]' },
+      { id: 'c12-4', text: '[PLACEHOLDER]' },
+      { id: 'c12-5', text: '[PLACEHOLDER]' },
+    ],
+    diary_question: '[PLACEHOLDER]',
+    pilula: { title: 'Sabia que...', content: '[PLACEHOLDER]' },
+  },
+
+  // ========== MÓDULO 13: SAÚDE MENTAL ==========
+  13: {
+    textos: [
+      { id: 't13-1', title: 'Texto 1', content: '[PLACEHOLDER]' },
+      { id: 't13-2', title: 'Texto 2', content: '[PLACEHOLDER]' },
+    ],
+    checklist: [],
+    diary_question: '[PLACEHOLDER]',
+    pilula: { title: '', content: '' },
+  },
+
+  // ========== MÓDULO 14: CO-SLEEPING SEGURO ==========
+  14: {
+    textos: [
+      { id: 't14-1', title: 'Regras de co-sleeping seguro', content: '[PLACEHOLDER — "Regras de co-sleeping seguro"]' },
+      { id: 't14-2', title: 'Adaptar a Técnica da Vaquinha à cama partilhada', content: '[PLACEHOLDER — "Adaptar a Técnica da Vaquinha à cama partilhada"]' },
+      { id: 't14-3', title: 'Quando o pai dorme em quarto separado', content: '[PLACEHOLDER — "Quando o pai dorme em quarto separado"]' },
+    ],
+    checklist: [
+      { id: 'c14-1', text: '[PLACEHOLDER]' },
+      { id: 'c14-2', text: '[PLACEHOLDER]' },
+      { id: 'c14-3', text: '[PLACEHOLDER]' },
+      { id: 'c14-4', text: '[PLACEHOLDER]' },
+      { id: 'c14-5', text: '[PLACEHOLDER]' },
+      { id: 'c14-6', text: '[PLACEHOLDER]' },
+      { id: 'c14-7', text: '[PLACEHOLDER]' },
+    ],
+    diary_question: '[PLACEHOLDER]',
+    pilula: { title: 'Sabia que...', content: '[PLACEHOLDER]' },
+  },
 };
 
 // ========== MENSAGENS PARA FAMÍLIA (conteúdo real) ==========

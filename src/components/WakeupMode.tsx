@@ -3,6 +3,7 @@ import { Moon, Play, Pause, Volume2, X, Check, ArrowRight } from 'lucide-react';
 import type { WakeupEntry, ResolvedStep, BabyAge } from '../lib/types';
 import { useVibrate } from '../hooks/useVibrate';
 import { useTimer, formatTime } from '../hooks/useTimer';
+import { getCustomAudio } from '../lib/audioStorage';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -56,6 +57,8 @@ export function WakeupMode({
 
     if (babyAge === '0-6m' && nextStep === 4) {
       setStep(5);
+      reset(0);
+      setStopwatch();
     } else {
       setStep(nextStep);
       if (nextStep === 2) {
@@ -82,7 +85,7 @@ export function WakeupMode({
     const durationSeconds = Math.floor((now - startTime) / 1000);
 
     const wakeup: WakeupEntry = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).substring(2),
       user_id: 'local',
       day_number: currentDay,
       timestamp: new Date(startTime).toISOString(),
@@ -96,19 +99,52 @@ export function WakeupMode({
     onExit();
   };
 
-  const toggleAudio = () => {
+  const toggleAudio = async () => {
     if (!audioRef.current) {
-      audioRef.current = new Audio('/audio/guide-silence.mp3');
+      let customUrl = '/audio/guide-silence.mp3';
+      try {
+        const customBlob = await getCustomAudio();
+        if (customBlob) {
+          customUrl = URL.createObjectURL(customBlob);
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar áudio personalizado', err);
+      }
+
+      audioRef.current = new Audio(customUrl);
+      audioRef.current.onended = () => setAudioPlaying(false);
+      audioRef.current.onerror = () => {
+        console.warn('Áudio não encontrado ou erro ao carregar.');
+        setAudioPlaying(false);
+      };
     }
+
     if (audioPlaying) {
       audioRef.current.pause();
       setAudioPlaying(false);
     } else {
-      audioRef.current.play().catch(() => {});
-      setAudioPlaying(true);
-      audioRef.current.onended = () => setAudioPlaying(false);
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setAudioPlaying(true);
+        }).catch(err => {
+          console.warn('Erro ao reproduzir áudio', err);
+          setAudioPlaying(false);
+        });
+      } else {
+        setAudioPlaying(true);
+      }
     }
   };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup audio blob url if any
+      if (audioRef.current && audioRef.current.src.startsWith('blob:')) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-night-900 text-white flex flex-col justify-center items-center px-4 py-8">
@@ -241,7 +277,7 @@ export function WakeupMode({
                     <Pause className="w-6 h-6" />
                   </Button>
                 )}
-                <Button size="icon" variant="outline" className="w-14 h-14 rounded-full border-night-600 bg-night-700 hover:bg-night-600 text-gray-400" onClick={() => reset(0)}>
+                <Button size="icon" variant="outline" className="w-14 h-14 rounded-full border-night-600 bg-night-700 hover:bg-night-600 text-gray-400" onClick={() => { reset(120); setCountdown(120); }}>
                   <X className="w-6 h-6" />
                 </Button>
               </div>

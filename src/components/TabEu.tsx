@@ -6,6 +6,7 @@ import {
 import { ACHIEVEMENTS, type Achievement } from '../lib/types';
 import { useVibrate } from '../hooks/useVibrate';
 import type { WakeupEntry } from '../lib/types';
+import { CustomAudioSetup } from './CustomAudioSetup';
 
 interface TabEuProps {
   isNightMode: boolean;
@@ -22,8 +23,8 @@ interface TabEuProps {
 
 const ALL_ACHIEVEMENTS: Achievement[] = [
   { id: 'primeira-noite', title: 'Primeira Noite', description: 'Registaste o primeiro despertar', icon: 'moon', condition: 'first_wakeup' },
-  { id: 'dia-1', title: 'Dia 1', description: 'Concluiste o Dia 1', icon: '1', condition: 'd1' },
-  { id: 'dia-3', title: 'Aplicou a Técnica', description: 'Concluiste o Dia 3', icon: 'heart', condition: 'd3' },
+  { id: 'dia-1', title: 'Módulo 1', description: 'Concluiste o Módulo 1', icon: '1', condition: 'd1' },
+  { id: 'dia-3', title: 'Aplicou a Técnica', description: 'Concluiste o Módulo 3', icon: 'heart', condition: 'd3' },
   { id: 'dia-7', title: 'Conseguiu!', description: 'Completaste os 7 dias', icon: 'trophy', condition: 'd7' },
   { id: 'diario-1', title: 'Primeiro Registo', description: 'Escreveste no diário', icon: 'pen', condition: 'first_diary' },
   { id: 'noite-tranquila', title: 'Noite Tranquila', description: 'Uma noite com ≤2 despertares', icon: 'star', condition: 'quiet' },
@@ -126,7 +127,7 @@ export function TabEu({
               O Teu Perfil
             </h1>
             <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Dia {currentDay} • {babyName}
+              Módulo {currentDay} • {babyName}
             </p>
           </div>
         </div>
@@ -218,7 +219,7 @@ export function TabEu({
               <div className={`rounded-2xl p-5 ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className={`font-bold ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
-                    Últimos {Math.min(currentDay, 7)} Dias
+                    Últimos {Math.min(currentDay, 7)} Módulos
                   </h3>
                   {improvement > 0 && (
                     <div className="flex items-center gap-1 bg-green-500/20 px-2 py-1 rounded-full">
@@ -348,7 +349,7 @@ export function TabEu({
                   <div key={index} className={`p-4 rounded-xl ${isNightMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className={`text-xs font-medium ${isNightMode ? 'text-coral-400' : 'text-coral-500'}`}>
-                        Dia {entry.day}
+                        Módulo {entry.day_number}
                       </span>
                       <span className={`text-xs ${isNightMode ? 'text-gray-500' : 'text-gray-400'}`}>
                         {new Date(entry.date).toLocaleDateString('pt-MZ')}
@@ -372,12 +373,15 @@ export function TabEu({
 
         {/* Settings Section */}
         {activeSection === 'settings' && (
-          <div className={`rounded-2xl overflow-hidden ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-            <div className="p-5">
-              <h3 className={`font-bold mb-4 ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
-                Definições
-              </h3>
-            </div>
+          <div className="space-y-4">
+            <CustomAudioSetup isNightMode={isNightMode} />
+
+            <div className={`rounded-2xl overflow-hidden ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
+              <div className="p-5">
+                <h3 className={`font-bold mb-4 ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+                  Definições
+                </h3>
+              </div>
 
             <button
               onClick={() => {
@@ -420,6 +424,7 @@ export function TabEu({
                 Feito para màes moçambicanas 💙
               </p>
             </div>
+          </div>
           </div>
         )}
       </main>

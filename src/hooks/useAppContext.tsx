@@ -8,7 +8,8 @@ export function useAppContext() {
     user: null,
     baby: null,
     currentDay: 1,
-    dayProgress: {},
+    contentProgress: {},
+    quebrasDoRitmo: [],
     wakeupHistory: [],
     diaryEntries: [],
     achievements: [],
@@ -51,6 +52,8 @@ export function useAppContext() {
           planoManutencao: savedState.planoManutencao ?? false,
           themePreference: savedState.themePreference ?? 'auto',
           diaryEntries: savedState.diaryEntries || [],
+          contentProgress: savedState.contentProgress || {},
+          quebrasDoRitmo: savedState.quebrasDoRitmo || [],
         }));
       } catch (error) {
         console.error('Error loading data:', error);
@@ -105,7 +108,11 @@ export function useAppContext() {
 
   const unlockAllDays = useCallback(async () => {
     await storage.saveState({ currentDay: 7 });
-    setState((prev) => ({ ...prev, currentDay: 7 }));
+    setState((prev) => ({ 
+      ...prev, 
+      currentDay: 7,
+      onboarding: prev.onboarding || { babyName: 'Dev Baby', babyAge: '0-6m', dayStartedAt: new Date().toISOString() }
+    }));
   }, []);
 
   const updateThemePreference = useCallback(async (theme: 'auto' | 'dark' | 'light') => {
@@ -121,6 +128,22 @@ export function useAppContext() {
     }));
   }, []);
 
+  const updateContentProgress = useCallback(async (moduleId: string, progress: import('../lib/types').ModuleProgress) => {
+    setState((prev) => {
+      const newProgress = { ...prev.contentProgress, [moduleId]: progress };
+      storage.saveState({ contentProgress: newProgress });
+      return { ...prev, contentProgress: newProgress };
+    });
+  }, []);
+
+  const registerQuebraDoRitmo = useCallback(async (quebra: import('../lib/types').QuebraDoRitmo) => {
+    setState((prev) => {
+      const newQuebras = [...prev.quebrasDoRitmo, quebra];
+      storage.saveState({ quebrasDoRitmo: newQuebras });
+      return { ...prev, quebrasDoRitmo: newQuebras };
+    });
+  }, []);
+
   return {
     state,
     isLoading,
@@ -132,6 +155,8 @@ export function useAppContext() {
     unlockAllDays,
     updateThemePreference,
     addDiaryEntry,
+    updateContentProgress,
+    registerQuebraDoRitmo,
   };
 }
 

@@ -28,12 +28,12 @@ const DAY_DETAILED_TIPS: Record<number, { what: string; encouragement: string; a
     action: 'Cada vez que ele acordar, usa o botao "ELE ACORDOU". Deixa o app guiar-te.',
   },
   2: {
-    what: 'Dia 2 e sobre ajustar o processo. O bebe ja reparou que mama nao e mais o "gatilho" automatico para dormir.',
+    what: 'Módulo 2 e sobre ajustar o processo. O bebe ja reparou que mama nao e mais o "gatilho" automatico para dormir.',
     encouragement: 'O esforco de ontem nao foi em vao. Cada noite cria memoria.',
     action: 'Mantem a sequencia de passos CONSISTENTE com ontem. A consistencia e a chave.',
   },
   3: {
-    what: 'E frequente o Dia 3 ser o mais dificil. Isto chama-se "extincao burst" — o bebe esta a testar se o limite e real.',
+    what: 'E frequente o Módulo 3 ser o mais dificil. Isto chama-se "extincao burst" — o bebe esta a testar se o limite e real.',
     encouragement: 'Se hoje for mais dificil, e BOM SINAL. Significa que o metodo esta a funcionar. NAO CEDAS.',
     action: 'Se o choro for intenso, respira fundo. Pede ajuda se precisares. MAS mantem os limites.',
   },
@@ -98,7 +98,7 @@ export function DaySummary({
         </button>
         <div>
           <h1 className={`font-semibold text-lg ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
-            Dia {displayDay} {displayDay <= 7 ? 'de 7' : ''}
+            Módulo {displayDay} {displayDay <= 7 ? 'de 7' : ''}
           </h1>
           <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {dayTitle}
@@ -116,7 +116,7 @@ export function DaySummary({
             {dayTitle}
           </h2>
           <p className={`text-sm ${isNightMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            Dia {currentDay} de {onboarding.babyName}
+            Módulo {currentDay} de {onboarding.babyName}
           </p>
         </div>
 
@@ -190,7 +190,7 @@ export function DaySummary({
               <div className="mt-4 p-3 rounded-lg bg-green-500/10 flex items-center gap-2">
                 <TrendingDown className="w-5 h-5 text-green-500" />
                 <p className="text-sm text-green-600 font-medium">
-                  {improvement}% menos desde o Dia 1!
+                  {improvement}% menos desde o Módulo 1!
                 </p>
               </div>
             )}
