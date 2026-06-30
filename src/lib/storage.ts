@@ -87,6 +87,16 @@ export async function getWakeups(): Promise<WakeupEntry[]> {
   return JSON.parse(localStorage.getItem('wakeups') || '[]');
 }
 
+export async function saveDiaryEntry(entry: DiaryEntry): Promise<void> {
+  const existing = JSON.parse(localStorage.getItem('diary') || '[]');
+  existing.push(entry);
+  localStorage.setItem('diary', JSON.stringify(existing));
+}
+
+export async function getDiaryEntries(): Promise<DiaryEntry[]> {
+  return JSON.parse(localStorage.getItem('diary') || '[]');
+}
+
 export async function saveState(state: Partial<AppState>): Promise<void> {
   const db = await openDB();
   if (db) {
@@ -102,17 +112,22 @@ export async function saveState(state: Partial<AppState>): Promise<void> {
 }
 
 export async function getState(): Promise<Partial<AppState>> {
-  const state: Partial<AppState> = {};
+  const state: Partial<AppState> = {
+    wakeupHistory: await getWakeups(),
+    diaryEntries: await getDiaryEntries(),
+  };
 
   const currentDay = localStorage.getItem('state_currentDay');
   const ritualCompletedToday = localStorage.getItem('state_ritualCompletedToday');
   const lastRitualDate = localStorage.getItem('state_lastRitualDate');
   const planoManutencao = localStorage.getItem('state_planoManutencao');
+  const themePreference = localStorage.getItem('state_themePreference');
 
   state.currentDay = currentDay ? JSON.parse(currentDay) : 1;
   state.ritualCompletedToday = ritualCompletedToday ? JSON.parse(ritualCompletedToday) : false;
   state.lastRitualDate = lastRitualDate || null;
   state.planoManutencao = planoManutencao ? JSON.parse(planoManutencao) : false;
+  state.themePreference = themePreference ? JSON.parse(themePreference) : 'auto';
 
   if (new URLSearchParams(window.location.search).get('manutencao') === 'ativo') {
     localStorage.setItem('state_planoManutencao', 'true');

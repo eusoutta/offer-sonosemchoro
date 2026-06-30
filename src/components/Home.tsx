@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Moon, BarChart3, MoonStar, HelpCircle, Menu, Sparkles, Heart, Star, Zap, Coffee, Sun, CloudMoon, Baby } from 'lucide-react';
+import { Moon, BarChart3, MoonStar, HelpCircle, Menu, Sparkles, Heart, Star, CloudMoon, Baby, TrendingDown, Award } from 'lucide-react';
 import type { OnboardingData, WakeupEntry } from '../lib/types';
 import { useVibrate } from '../hooks/useVibrate';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface HomeProps {
   onboarding: OnboardingData;
@@ -14,78 +16,80 @@ interface HomeProps {
   onMenu: () => void;
   isNightMode: boolean;
   onDaySummary: () => void;
+  onUnlockDevMode?: () => void;
+  onThemeToggle: () => void;
 }
 
-const DAY_MESSAGES: Record<number, { title: string; message: string; tip: string; icon: string }> = {
+const DAY_MESSAGES: Record<number, { title: string; message: string; tip: string; emoji: string }> = {
   1: {
     title: 'A Semente',
-    message: 'Esta e a noite de plantar a semente.',
-    tip: 'Nao desistas na primeira dificuldade. Cada despertar e uma oportunidade de praticar.',
-    icon: '1',
+    message: 'Esta é a noite de plantar a semente. Hoje, observas e aprendes.',
+    tip: 'Não desistas na primeira dificuldade. Cada despertar é uma oportunidade de praticar. O simples facto de estares aqui já é progresso.',
+    emoji: '🌱',
   },
   2: {
     title: 'A Ajustagem',
-    message: 'Cada passo conta. Continua.',
-    tip: 'O teu bebe esta a aprender algo novo. Paciencia e consistencia sao as tuas armas.',
-    icon: '2',
+    message: 'O ambiente está preparado. Agora aplica a sequência pela primeira vez.',
+    tip: 'O teu bebé está a aprender algo novo. Paciência e consistência são as tuas armas. Segue os 5 passos em cada despertar.',
+    emoji: '🏠',
   },
   3: {
     title: 'O Pico',
-    message: 'Hoje e a noite mais dificil — aguenta.',
-    tip: 'Se o teu bebe chora mais hoje, e BOM sinal. Esta a testar limites. Nao cedas.',
-    icon: '3',
+    message: 'Hoje é a noite mais difícil — e isso é BOM. Significa que está a funcionar.',
+    tip: 'Se o teu bebé chora mais hoje, é o "extinction burst". Ele está a testar limites. Mantém-te firme. Amanhã será mais fácil.',
+    emoji: '🔥',
   },
   4: {
-    title: 'A Consolidaçao',
-    message: 'O progresso esta a ser consolidado.',
-    tip: 'Os despertares comecam a descer. Mantem a sequencia em cada um.',
-    icon: '4',
+    title: 'A Consolidação',
+    message: 'O progresso está a consolidar-se. Os despertares começam a reduzir.',
+    tip: 'Encurta o tempo da mama (Passo 5). Retira antes de adormecer. Cada despertar é mais fácil que ontem.',
+    emoji: '📈',
   },
   5: {
-    title: 'O Habito',
-    message: 'Estas a criar um novo habito.',
-    tip: 'O cerebro do teu bebe ja esta a entender. Confia no processo.',
-    icon: '5',
+    title: 'O Hábito',
+    message: 'O bebé começa a auto-acalmar-se. O novo hábito está a formar-se.',
+    tip: 'Presta atenção aos momentos em que ele resmungou mas voltou a adormecer sozinho. Isso é o objectivo — está a acontecer!',
+    emoji: '💪',
   },
   6: {
     title: 'A Viragem',
-    message: 'Quase uma semana! O sono esta a mudar.',
-    tip: 'Olha para tras e ve o progresso. Estas quase la.',
-    icon: '6',
+    message: 'Quase uma semana completa. O sono está a mudar para melhor.',
+    tip: 'Olha para trás e compara com o Dia 1. O progresso é real. Estás quase lá — mais uma noite.',
+    emoji: '🌅',
   },
   7: {
     title: 'Uma Semana',
-    message: 'Uma semana completa. Orgulha-te.',
-    tip: 'Conseguiste! O teu bebe aprendeu a adormecer de nova forma. Celebra.',
-    icon: '7',
+    message: 'Uma semana completa. Orgulha-te do que conquistaste.',
+    tip: 'Conseguiste! O teu bebé aprendeu a adormecer de nova forma. Tu ensinaste-lhe. Celebra esta vitória.',
+    emoji: '🏆',
   },
 };
 
 const TIME_BASED_TIPS: Record<number, string> = {
-  5: 'Manha cedo: registra os despertares da noite passada no diario.',
-  6: 'Manha: como foi a noite? Vai ao Diario ver o teu progresso.',
-  7: 'Manha: otima altura para rever o que correu bem ontem.',
-  8: 'Manha: se ontem foi dificil, hoje e uma nova chance.',
-  9: 'Manha: o teu bebe esta a dormir melhor por causa do teu esforco.',
-  10: 'Meia manha: faz o ritual pre-sono hoje a noite?',
-  11: 'Meia manha: planear a noite ajuda a manter consistencia.',
-  12: 'Meio dia: descansa enquanto o bebe dorme. Tu tambem precisas.',
-  13: 'Tarde: o progresso vem da consistencia, nao da perfeicao.',
-  14: 'Tarde: lembra-te - cada noite que tentas conta.',
-  15: 'Tarde: como esta o teu cansaco? Pede ajuda se precisares.',
-  16: 'Tarde: em breve comeca o ritual pre-sono.',
-  17: 'Tarde: o Ritual Pre-sono esta disponivel! Prepara o terreno.',
-  18: 'Anoitecer: hora de comecar o ritual, preparar o ambiente.',
-  19: 'Noite: luzes baixas, ambiente calmo. A noite comeca.',
-  20: 'Noite: se o bebe ainda nao dorme, comeca o ritual.',
-  21: 'Noite: hora de deitar. Confia no processo.',
-  22: 'Noite: se ele acordar, usa o botao "ELE ACORDOU".',
-  23: 'Noite profunda: mantem o telemovel por perto para usar o metodo.',
-  0: 'Meia-noite: tu consegues. Cada despertar e pratica.',
-  1: 'Madrugada: respira. Esta cansada mas esta a funcionar.',
-  2: 'Madrugada: o teu sacrificio de hoje sera sono amanha.',
-  3: 'Madrugada: quase amanhecer. Aguenta.',
-  4: 'Madrugada: amanhece em breve. Forca, mama.',
+  5: '☀️ Manhã cedo — regista os despertares da noite no app.',
+  6: '☀️ Como foi a noite? Vai ao progresso ver os teus números.',
+  7: '☀️ Óptima altura para rever o que correu bem ontem.',
+  8: '☀️ Se ontem foi difícil, hoje é uma nova chance. Cada noite conta.',
+  9: '☀️ O teu bebé está a dormir melhor por causa do teu esforço.',
+  10: '🌤️ Planeia a noite: vais fazer o ritual pré-sono?',
+  11: '🌤️ Planear a noite ajuda a manter a consistência.',
+  12: '🌞 Descansa enquanto o bebé dorme. Tu também precisas.',
+  13: '🌞 O progresso vem da consistência, não da perfeição.',
+  14: '🌞 Lembra-te: cada noite que tentas, conta.',
+  15: '🌤️ Como está o teu cansaço? Pede ajuda se precisares.',
+  16: '🌤️ Em breve começa o ritual pré-sono. Prepara-te.',
+  17: '🌅 O ritual pré-sono está disponível! Começa a preparar o ambiente.',
+  18: '🌙 Hora de começar o ritual: banho, pijama, luz baixa.',
+  19: '🌙 Luzes baixas, ambiente calmo. A noite começa.',
+  20: '🌙 Se o bebé ainda não dorme, começa o ritual agora.',
+  21: '🌙 Hora de deitar. Confia no processo — tu sabes o que fazer.',
+  22: '🌑 Se ele acordar, usa o botão "ELE ACORDOU" e segue os passos.',
+  23: '🌑 Mantém o telemóvel por perto. O app guia-te.',
+  0: '🌑 Tu consegues. Cada despertar é prática.',
+  1: '🌑 Respira. Estás cansada mas estás a fazer o certo.',
+  2: '🌑 O teu sacrifício de agora será sono amanhã.',
+  3: '🌑 Quase amanhecer. Aguenta firme.',
+  4: '🌑 Amanhece em breve. Força, mãe. 💛',
 };
 
 export function Home({
@@ -99,10 +103,13 @@ export function Home({
   onMenu,
   isNightMode,
   onDaySummary,
+  onUnlockDevMode,
+  onThemeToggle,
 }: HomeProps) {
   const { vibrate } = useVibrate();
   const [isRitualActive, setIsRitualActive] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [clickCount, setClickCount] = useState(0);
 
   useEffect(() => {
     const checkTime = () => {
@@ -123,21 +130,19 @@ export function Home({
   const getDayInfo = () => {
     return DAY_MESSAGES[Math.min(currentDay, 7)] || {
       title: 'Continua',
-      message: 'Continua assim.',
-      tip: 'O progresso mantem-se.',
-      icon: '!',
+      message: 'Mantém a rotina. O hábito está consolidado.',
+      tip: 'Se houve regressão, volta aos 5 passos. O bebé recupera rápido.',
+      emoji: '✨',
     };
   };
 
   const getTimeTip = () => {
     const hour = currentTime.getHours();
-    return TIME_BASED_TIPS[hour] || 'Confia no processo.';
+    return TIME_BASED_TIPS[hour] || '💛 Confia no processo — estás a fazer bem.';
   };
 
   const getDisplayDay = (): string => {
-    if (currentDay <= 7) {
-      return `Dia ${currentDay} de 7`;
-    }
+    if (currentDay <= 7) return `Dia ${currentDay} de 7`;
     return `Dia ${currentDay}`;
   };
 
@@ -145,34 +150,52 @@ export function Home({
   const todayWakeups = wakeups.filter(w => w.date === today);
   const lastNightWakeups = todayWakeups.length;
 
+  // Calculate improvement
+  const day1Wakeups = wakeups.filter(w => w.day_number === 1).length;
+  const improvement = day1Wakeups > 0 && currentDay > 1
+    ? Math.round(((day1Wakeups - lastNightWakeups) / day1Wakeups) * 100)
+    : 0;
+
   const dayInfo = getDayInfo();
 
   return (
-    <div className={`min-h-screen flex flex-col ${isNightMode ? 'bg-gray-900' : 'bg-cream'}`}>
+    <div className={`min-h-screen flex flex-col ${isNightMode ? 'bg-gradient-night' : 'bg-gradient-warm'}`}>
       {/* Header */}
-      <header className={`px-4 py-3 flex items-center justify-between ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+      <header className={`px-5 py-3 flex items-center justify-between ${isNightMode ? 'glass-dark border-b border-white/5' : 'glass border-b border-coral-100/50'}`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-coral-400 to-coral-500 rounded-full flex items-center justify-center shadow-md">
+          <button 
+            onClick={() => {
+              const newCount = clickCount + 1;
+              setClickCount(newCount);
+              if (newCount === 5) {
+                vibrate(200);
+                onUnlockDevMode?.();
+                setClickCount(0);
+              }
+            }}
+            className="w-10 h-10 bg-gradient-to-br from-coral-400 to-coral-600 rounded-xl flex items-center justify-center shadow-md active:scale-95"
+          >
             <MoonStar className="w-5 h-5 text-white" />
-          </div>
+          </button>
           <div>
-            <h1 className={`font-bold text-base ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+            <h1 className={`font-extrabold text-base tracking-tight ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
               Sono sem Choro
             </h1>
-            <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Metodo da Vaquinha
+            <p className={`text-[10px] font-medium ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              O teu guia noturno
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {lastNightWakeups > 0 && (
-            <div className={`px-2 py-1 rounded-full text-xs font-medium ${isNightMode ? 'bg-coral-500/20 text-coral-300' : 'bg-coral-100 text-coral-600'}`}>
-              {lastNightWakeups} despertares
-            </div>
-          )}
+          <button
+            onClick={() => { vibrate(30); onThemeToggle(); }}
+            className={`p-2 rounded-xl ${isNightMode ? 'bg-gray-800/80 text-coral-400 border border-gray-700' : 'bg-coral-50 text-coral-500 border border-coral-100'}`}
+          >
+            <MoonStar className="w-5 h-5" />
+          </button>
           <button
             onClick={() => { vibrate(50); onMenu(); }}
-            className={`p-2 rounded-lg ${isNightMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'}`}
+            className={`p-2 rounded-xl ${isNightMode ? 'bg-white/5 text-white' : 'bg-gray-100 text-gray-600'}`}
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -183,139 +206,159 @@ export function Home({
         {/* Day Status Card */}
         <button
           onClick={() => { vibrate(50); onDaySummary(); }}
-          className={`rounded-2xl p-5 mb-4 text-left transition-all ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-lg border-2 border-coral-100 active:scale-[0.98]`}
+          className={`rounded-2xl p-5 mb-3 text-left transition-all active:scale-[0.98] ${
+            isNightMode
+              ? 'bg-gray-800/60 border border-gray-700/30 shadow-premium-dark'
+              : 'bg-white/90 border border-coral-100/50 shadow-premium'
+          }`}
         >
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-coral-400 to-coral-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl font-bold text-white">{dayInfo.icon}</span>
+            <div className="w-14 h-14 bg-gradient-to-br from-coral-400 to-coral-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <span className="text-2xl">{dayInfo.emoji}</span>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <p className={`font-bold text-lg ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+                <p className={`font-extrabold text-lg tracking-tight ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
                   {getDisplayDay()}
                 </p>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${isNightMode ? 'bg-coral-500/20 text-coral-300' : 'bg-coral-100 text-coral-600'}`}>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isNightMode ? 'bg-coral-500/20 text-coral-300' : 'bg-coral-100 text-coral-600'}`}>
                   {dayInfo.title}
                 </span>
               </div>
-              <p className={`text-sm mb-2 ${isNightMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={`text-sm mb-2 leading-relaxed ${isNightMode ? 'text-gray-300' : 'text-gray-600'}`}>
                 {dayInfo.message}
               </p>
-              <p className={`text-xs italic ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                "{dayInfo.tip}"
+              <p className={`text-xs italic leading-relaxed ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                💬 "{dayInfo.tip}"
               </p>
             </div>
           </div>
         </button>
 
-        {/* Tip based on time */}
-        <div className={`rounded-xl p-3 mb-4 flex items-start gap-3 ${isNightMode ? 'bg-gray-800/50' : 'bg-coral-50'}`}>
-          <Sparkles className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isNightMode ? 'text-coral-400' : 'text-coral-500'}`} />
+        {/* Value Recap — shows improvement */}
+        {currentDay > 1 && wakeups.length > 0 && improvement > 0 && (
+          <div className={`rounded-xl p-3 mb-3 flex items-center gap-3 ${isNightMode ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200/50'}`}>
+            <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <TrendingDown className="w-4 h-4 text-green-500" />
+            </div>
+            <div className="flex-1">
+              <p className={`text-xs font-semibold ${isNightMode ? 'text-green-400' : 'text-green-600'}`}>
+                📉 {improvement}% menos despertares que o Dia 1
+              </p>
+              <p className={`text-[10px] ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                O método está a funcionar. Continua assim!
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Time-based Tip */}
+        <div className={`rounded-xl p-3 mb-3 flex items-start gap-3 ${isNightMode ? 'bg-gray-800/40 border border-gray-700/20' : 'bg-coral-50/80 border border-coral-100/30'}`}>
+          <Sparkles className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isNightMode ? 'text-coral-400' : 'text-coral-500'}`} />
           <p className={`text-xs leading-relaxed ${isNightMode ? 'text-gray-300' : 'text-gray-600'}`}>
             {getTimeTip()}
           </p>
         </div>
 
         {/* Main Wakeup Button */}
-        <div className="flex-1 flex flex-col items-center justify-center py-6">
-          <button
-            onClick={handleWakeup}
-            className="w-[75%] aspect-square max-w-[280px] rounded-full flex items-center justify-center shadow-2xl transition-all animate-pulse-soft bg-gradient-to-br from-coral-400 to-coral-500 active:scale-95"
-          >
-            <div className="text-white text-center">
-              <Baby className="w-14 h-14 mx-auto mb-3 opacity-90" />
-              <span className="text-3xl font-bold block">ELE</span>
-              <span className="text-3xl font-bold block">ACORDOU</span>
-              <span className={`text-xs mt-2 block opacity-75 ${isNightMode ? 'text-white' : 'text-white/80'}`}>
-                Toca para comecar
-              </span>
-            </div>
-          </button>
-
-          <p className={`mt-6 text-center text-sm max-w-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Quando o bebe acordar, toca aqui.
-            <br />
-            O app guia-te passo a passo durante a crise.
-          </p>
+        <div className="flex-1 flex flex-col items-center justify-center py-4 px-2">
+          <Card className="w-full bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+              <Baby className="w-12 h-12 mb-4 text-primary opacity-90" />
+              <Button 
+                size="lg" 
+                className="w-full h-16 text-lg font-bold shadow-lg bg-coral-500 hover:bg-coral-600 text-white border-none"
+                onClick={handleWakeup}
+              >
+                ELE ACORDOU
+              </Button>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Toca no botão quando o bebé acordar para iniciar o método.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Quick Stats */}
         {wakeups.length > 0 && (
-          <div className={`rounded-xl p-3 mb-4 ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
-            <div className="flex items-center justify-around">
+          <Card className="mb-4">
+            <CardContent className="p-4 flex items-center justify-around">
               <div className="text-center">
-                <p className={`text-2xl font-bold ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+                <p className="text-2xl font-extrabold text-foreground">
                   {todayWakeups.length}
                 </p>
-                <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Despertares hoje
+                <p className="text-[10px] font-medium text-muted-foreground">
+                  Hoje
                 </p>
               </div>
-              <div className="w-px h-10 bg-gray-300" />
+              <div className="w-px h-10 bg-border" />
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-500">
-                  {todayWakeups.filter(w => w.resolvedStep <= 3).length}
+                <p className="text-2xl font-extrabold text-green-500">
+                  {todayWakeups.filter(w => w.resolved_step <= 3).length}
                 </p>
-                <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Sem mamar
+                <p className="text-[10px] font-medium text-muted-foreground">
+                  Sem mama
                 </p>
               </div>
-              <div className="w-px h-10 bg-gray-300" />
+              <div className="w-px h-10 bg-border" />
               <div className="text-center">
-                <p className={`text-2xl font-bold ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+                <p className="text-2xl font-extrabold text-primary">
                   {currentDay}
                 </p>
-                <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <p className="text-[10px] font-medium text-muted-foreground">
                   Dias
                 </p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
-      </main>
 
-      {/* Bottom Navigation */}
-      <nav className={`fixed bottom-0 left-0 right-0 px-4 py-3 ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-inner border-t ${isNightMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <div className="grid grid-cols-4 gap-2 max-w-md mx-auto">
+        {/* Actions Grid (Replaces old fixed nav) */}
+        <div className="grid grid-cols-4 gap-3">
           <button
             onClick={() => { vibrate(50); onDaySummary(); }}
-            className={`rounded-xl p-3 flex flex-col items-center gap-1 ${isNightMode ? 'bg-coral-500/20 text-coral-400' : 'bg-coral-50 text-coral-500'}`}
+            className={`rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all active:scale-95 bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
           >
-            <Star className="w-5 h-5" />
-            <span className="text-xs font-medium">Plano</span>
+            <Star className="w-5 h-5 text-primary" />
+            <span className="text-[10px] font-semibold">Plano</span>
           </button>
 
           <button
             onClick={() => { vibrate(50); onProgress(); }}
-            className={`rounded-xl p-3 flex flex-col items-center gap-1 ${isNightMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}
+            className={`rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all active:scale-95 bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
           >
-            <BarChart3 className="w-5 h-5" />
-            <span className="text-xs font-medium">Diario</span>
+            <BarChart3 className="w-5 h-5 text-primary" />
+            <span className="text-[10px] font-semibold">Diário</span>
           </button>
 
           <button
-            onClick={() => { if (isRitualActive) { vibrate(50); onRitual(); }}}
-            className={`rounded-xl p-3 flex flex-col items-center gap-1 ${
+            onClick={() => { 
+              if (isRitualActive) { 
+                vibrate(50); onRitual(); 
+              } else {
+                vibrate([30, 50, 30]);
+                alert("O ritual pré-sono só está disponível entre as 17h e as 21h.");
+              }
+            }}
+            className={`rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all active:scale-95 ${
               isRitualActive
-                ? isNightMode
-                  ? 'bg-coral-500/20 border border-coral-400 text-coral-400'
-                  : 'bg-coral-50 border border-coral-400 text-coral-500'
-                : `${isNightMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'}`
+                ? 'bg-primary/20 text-primary'
+                : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground opacity-50'
             }`}
           >
-            <CloudMoon className="w-5 h-5" />
-            <span className="text-xs font-medium">Ritual</span>
+            <CloudMoon className="w-5 h-5 text-primary" />
+            <span className="text-[10px] font-semibold">Ritual</span>
           </button>
 
           <button
             onClick={() => { vibrate(50); onFAQ(); }}
-            className={`rounded-xl p-3 flex flex-col items-center gap-1 ${isNightMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}
+            className={`rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all active:scale-95 bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
           >
-            <HelpCircle className="w-5 h-5" />
-            <span className="text-xs font-medium">Ajuda</span>
+            <HelpCircle className="w-5 h-5 text-primary" />
+            <span className="text-[10px] font-semibold">Ajuda</span>
           </button>
         </div>
-      </nav>
+      </main>
     </div>
   );
 }

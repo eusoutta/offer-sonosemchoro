@@ -1,4 +1,4 @@
-import { ArrowLeft, Heart, Star, TrendingDown, Moon, Sun, Baby } from 'lucide-react';
+import { ChevronLeft, Calendar, Play, Heart, Star, TrendingDown, Moon, Baby, ArrowLeft } from 'lucide-react';
 import type { WakeupEntry, OnboardingData } from '../lib/types';
 import { useVibrate } from '../hooks/useVibrate';
 
@@ -81,8 +81,8 @@ export function DaySummary({
   const todayWakeups = wakeups.filter(w => w.date === today);
 
   // Calculate improvement if we have data
-  const day1Wakeups = wakeups.filter(w => w.day === 1).length;
-  const latestWakeups = wakeups.filter(w => w.day === displayDay).length;
+  const day1Wakeups = wakeups.filter(w => w.day_number === 1).length;
+  const latestWakeups = wakeups.filter(w => w.day_number === displayDay).length;
   const improvement = day1Wakeups > 0 && displayDay > 1
     ? Math.round(((day1Wakeups - latestWakeups) / day1Wakeups) * 100)
     : null;
@@ -171,14 +171,16 @@ export function DaySummary({
                 <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>Despertares</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-500">
-                  {todayWakeups.filter(w => w.resolvedStep <= 3).length}
+                <p className="text-2xl font-extrabold text-green-500">
+                  {todayWakeups.filter(w => w.resolved_step <= 3).length}
                 </p>
-                <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>Sem mamar</p>
+                <p className={`text-[10px] font-medium ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Sem mama
+                </p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-500">
-                  {todayWakeups.filter(w => w.resolvedStep === 4).length}
+                <p className="text-2xl font-extrabold text-blue-500">
+                  {todayWakeups.filter(w => w.resolved_step === 4).length}
                 </p>
                 <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>Com agua</p>
               </div>

@@ -5,11 +5,20 @@ import * as storage from '../lib/storage';
 export function useAppContext() {
   const [state, setState] = useState<AppState>({
     onboarding: null,
-    wakeupHistory: [],
+    user: null,
+    baby: null,
     currentDay: 1,
+    dayProgress: {},
+    wakeupHistory: [],
+    diaryEntries: [],
+    achievements: [],
+    videoProgress: {},
+    planoManutencao: false,
     ritualCompletedToday: false,
     lastRitualDate: null,
-    planoManutencao: false,
+    isAuthenticated: false,
+    isLoading: false,
+    themePreference: 'auto',
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,14 +41,17 @@ export function useAppContext() {
           ? new Date(savedState.lastRitualDate).toDateString()
           : null;
 
-        setState({
+        setState((prev) => ({
+          ...prev,
           onboarding: onboarding,
           wakeupHistory: wakeups,
           currentDay: currentDay,
           ritualCompletedToday: lastRitualDate === today,
           lastRitualDate: savedState.lastRitualDate ?? null,
           planoManutencao: savedState.planoManutencao ?? false,
-        });
+          themePreference: savedState.themePreference ?? 'auto',
+          diaryEntries: savedState.diaryEntries || [],
+        }));
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -91,6 +103,24 @@ export function useAppContext() {
     }
   }, []);
 
+  const unlockAllDays = useCallback(async () => {
+    await storage.saveState({ currentDay: 7 });
+    setState((prev) => ({ ...prev, currentDay: 7 }));
+  }, []);
+
+  const updateThemePreference = useCallback(async (theme: 'auto' | 'dark' | 'light') => {
+    await storage.saveState({ themePreference: theme });
+    setState((prev) => ({ ...prev, themePreference: theme }));
+  }, []);
+
+  const addDiaryEntry = useCallback(async (entry: import('../lib/types').DiaryEntry) => {
+    await storage.saveDiaryEntry(entry);
+    setState((prev) => ({
+      ...prev,
+      diaryEntries: [...prev.diaryEntries, entry],
+    }));
+  }, []);
+
   return {
     state,
     isLoading,
@@ -99,6 +129,9 @@ export function useAppContext() {
     updateDay,
     completeRitual,
     checkPlanoManutencao,
+    unlockAllDays,
+    updateThemePreference,
+    addDiaryEntry,
   };
 }
 

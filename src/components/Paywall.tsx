@@ -15,13 +15,13 @@ export function Paywall({ isOpen, onClose, babyName, currentDay, wakeups }: Payw
 
   if (!isOpen) return null;
 
-  const day1 = wakeups.filter(w => w.day === 1).length;
+  const day1 = wakeups.filter(w => w.day_number === 1).length;
   const latestDay = Math.min(currentDay, 7);
-  const latestWakeups = wakeups.filter(w => w.day === latestDay).length;
+  const latestWakeups = wakeups.filter(w => w.day_number === latestDay).length;
   const improvement = day1 > 0 ? Math.round(((day1 - latestWakeups) / day1) * 100) : 0;
 
   const weekDays = [1, 2, 3, 4, 5, 6, 7].slice(0, Math.min(currentDay, 7));
-  const maxW = Math.max(...weekDays.map(d => wakeups.filter(w => w.day === d).length), 1);
+  const maxW = Math.max(...weekDays.map(d => wakeups.filter(w => w.day_number === d).length), 1);
 
   const handleCheckout = () => {
     vibrate(100);
@@ -73,7 +73,7 @@ export function Paywall({ isOpen, onClose, babyName, currentDay, wakeups }: Payw
             {/* Mini Chart */}
             <div className="flex items-end justify-between gap-2 h-16">
               {weekDays.map(d => {
-                const count = wakeups.filter(w => w.day === d).length;
+                const count = wakeups.filter(w => w.day_number === d).length;
                 const heightPct = maxW > 0 ? (count / maxW) * 100 : 0;
                 return (
                   <div key={d} className="flex-1 flex flex-col items-center">

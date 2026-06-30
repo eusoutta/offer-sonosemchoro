@@ -19,7 +19,7 @@ import type { WakeupEntry, TabId } from './lib/types';
 type Screen = 'home' | 'wakeup' | 'progress' | 'ritual' | 'faq' | 'daySummary';
 
 function App() {
-  const { state, isLoading, updateOnboarding, addWakeup, completeRitual } = useAppContext();
+  const { state, isLoading, updateOnboarding, addWakeup, completeRitual, unlockAllDays, updateThemePreference, addDiaryEntry } = useAppContext();
   const [screen, setScreen] = useState<Screen>('home');
   const [activeTab, setActiveTab] = useState<TabId>('hoje');
   const [isNightMode, setIsNightMode] = useState(false);
@@ -28,18 +28,27 @@ function App() {
   const [dayProgress, setDayProgress] = useState<Record<number, { completed: boolean; opened_at: string | null; completed_at: string | null }>>({});
 
   useEffect(() => {
-    setIsNightMode(isNightTime());
-    const interval = setInterval(() => setIsNightMode(isNightTime()), 60000);
-    return () => clearInterval(interval);
-  }, []);
+    if (state.themePreference === 'dark') {
+      setIsNightMode(true);
+    } else if (state.themePreference === 'light') {
+      setIsNightMode(false);
+    } else {
+      setIsNightMode(isNightTime());
+      const interval = setInterval(() => setIsNightMode(isNightTime()), 60000);
+      return () => clearInterval(interval);
+    }
+  }, [state.themePreference]);
 
   useEffect(() => {
-    // Check for plano manutencao URL param
+    // Check for URL params
     const params = new URLSearchParams(window.location.search);
     if (params.get('manutencao') === 'ativo') {
       localStorage.setItem('state_planoManutencao', 'true');
     }
-  }, []);
+    if (params.get('dev') === 'true') {
+      unlockAllDays();
+    }
+  }, [unlockAllDays]);
 
   useEffect(() => {
     // Show paywall after day 7 completion
@@ -155,6 +164,11 @@ function App() {
               onMenu={() => setMenuOpen(true)}
               isNightMode={isNightMode}
               onDaySummary={() => setScreen('daySummary')}
+              onUnlockDevMode={unlockAllDays}
+              onThemeToggle={() => {
+                const next = state.themePreference === 'dark' ? 'light' : 'dark';
+                updateThemePreference(next);
+              }}
             />
           )}
 
@@ -203,6 +217,7 @@ function App() {
           dayProgress={dayProgress}
           onDayOpen={handleDayOpen}
           onDayComplete={handleDayComplete}
+          onSaveDiary={addDiaryEntry}
         />
       )}
 
@@ -218,7 +233,8 @@ function App() {
       {activeTab === 'eu' && (
         <TabEu
           isNightMode={isNightMode}
-          onToggleNightMode={() => setIsNightMode(!isNightMode)}
+          themePreference={state.themePreference || 'auto'}
+          onToggleNightMode={(theme) => updateThemePreference(theme)}
           currentDay={state.currentDay}
           wakeupHistory={state.wakeupHistory}
           unlockedAchievements={JSON.parse(localStorage.getItem('unlockedAchievements') || '[]')}

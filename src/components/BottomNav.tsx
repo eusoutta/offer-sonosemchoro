@@ -19,7 +19,7 @@ export function BottomNav({ activeTab, onTabChange, isNightMode }: BottomNavProp
   ];
 
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 px-2 py-2 ${isNightMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-t shadow-lg safe-area-inset-bottom`}>
+    <nav className={`fixed bottom-0 left-0 right-0 z-50 px-2 py-2 ${isNightMode ? 'glass-dark border-white/5' : 'glass border-coral-100/30'} border-t shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe`}>
       <div className="max-w-md mx-auto flex justify-around">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

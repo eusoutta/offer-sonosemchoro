@@ -14,31 +14,30 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
 
   const today = new Date().toISOString().split('T')[0];
   const todayWakeups = wakeups.filter(w => w.date === today);
-  const resolvedWithoutMama = todayWakeups.filter(w => w.resolvedStep <= 3).length;
+  const resolvedWithoutMama = todayWakeups.filter(w => w.resolved_step <= 3).length;
   const totalToday = todayWakeups.length;
 
   // Calculate stats for last 7 days
-  const days: number[] = [];
-  for (let i = 1; i <= Math.min(currentDay, 7); i++) {
-    days.push(i);
-  }
-
+  const daysWithData = [...new Set(wakeups.map(w => w.day_number))].sort((a, b) => a - b);
+  const days = [1, 2, 3, 4, 5, 6, 7].slice(0, Math.min(currentDay, 7));
   const wakeupsByDay: Record<number, number[]> = {};
   const resolvedByStep: Record<number, Record<number, number>> = {};
+  
+  daysWithData.forEach(d => {
+    const dayWakeups = wakeups.filter(w => w.day_number === d);
+    wakeupsByDay[d] = dayWakeups.map(w => w.duration_seconds);
 
-  days.forEach(d => {
-    const dayWakeups = wakeups.filter(w => w.day === d);
-    wakeupsByDay[d] = dayWakeups.map(w => w.durationSeconds);
-
-    resolvedByStep[d] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    if (!resolvedByStep[d]) {
+        resolvedByStep[d] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    }
     dayWakeups.forEach(w => {
-      resolvedByStep[d][w.resolvedStep]++;
+      resolvedByStep[d][w.resolved_step]++;
     });
   });
 
   const totalWakeupsByDay: Record<number, number> = {};
   days.forEach(d => {
-    totalWakeupsByDay[d] = wakeups.filter(w => w.day === d).length;
+    totalWakeupsByDay[d] = wakeups.filter(w => w.day_number === d).length;
   });
 
   const day1Wakeups = totalWakeupsByDay[1] || 0;
@@ -50,7 +49,7 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
 
   const maxWakeups = Math.max(...Object.values(totalWakeupsByDay), 1);
   const totalAllDays = wakeups.length;
-  const totalResolvedWithoutMama = wakeups.filter(w => w.resolvedStep <= 3).length;
+  const totalResolvedWithoutMama = wakeups.filter(w => w.resolved_step <= 3).length;
 
   // Average duration
   const avgDuration = wakeupsByDay[latestDay]
@@ -147,14 +146,14 @@ export function Progress({ wakeups, currentDay, onBack, isNightMode }: ProgressP
                   <div
                     key={i}
                     className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
-                      w.resolvedStep <= 3
+                      w.resolved_step <= 3
                         ? 'bg-green-500/20 text-green-600'
-                        : w.resolvedStep === 4
+                        : w.resolved_step === 4
                           ? 'bg-yellow-500/20 text-yellow-600'
                           : 'bg-red-500/20 text-red-500'
                     }`}
                   >
-                    <span className="font-bold text-lg">{w.resolvedStep}</span>
+                    <span className="font-bold text-lg">{w.resolved_step}</span>
                     <span className="text-xs">
                       {new Date(w.timestamp).toLocaleTimeString('pt-MZ', { hour: '2-digit', minute: '2-digit' })}
                     </span>

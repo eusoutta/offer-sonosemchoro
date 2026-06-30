@@ -9,7 +9,8 @@ import type { WakeupEntry } from '../lib/types';
 
 interface TabEuProps {
   isNightMode: boolean;
-  onToggleNightMode: () => void;
+  themePreference: 'auto' | 'dark' | 'light';
+  onToggleNightMode: (theme: 'auto' | 'dark' | 'light') => void;
   currentDay: number;
   wakeupHistory: WakeupEntry[];
   unlockedAchievements: string[];
@@ -31,6 +32,7 @@ const ALL_ACHIEVEMENTS: Achievement[] = [
 
 export function TabEu({
   isNightMode,
+  themePreference,
   onToggleNightMode,
   currentDay,
   wakeupHistory,
@@ -378,19 +380,23 @@ export function TabEu({
             </div>
 
             <button
-              onClick={() => { vibrate(30); onToggleNightMode(); }}
+              onClick={() => {
+                vibrate(30);
+                const nextTheme = themePreference === 'auto' ? 'dark' : themePreference === 'dark' ? 'light' : 'auto';
+                onToggleNightMode(nextTheme);
+              }}
               className={`w-full p-4 flex items-center justify-between border-t ${
                 isNightMode ? 'border-gray-700' : 'border-gray-100'
               }`}
             >
               <div className="flex items-center gap-3">
-                {isNightMode ? <Moon className="w-5 h-5 text-gray-400" /> : <Sun className="w-5 h-5 text-yellow-500" />}
+                {themePreference === 'auto' ? <Settings className="w-5 h-5 text-gray-500" /> : themePreference === 'dark' ? <Moon className="w-5 h-5 text-gray-400" /> : <Sun className="w-5 h-5 text-yellow-500" />}
                 <span className={`font-medium ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
-                  Modo noite automático
+                  Tema do App
                 </span>
               </div>
               <div className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {isNightMode ? 'Ativo' : 'Desativado'}
+                {themePreference === 'auto' ? 'Automático' : themePreference === 'dark' ? 'Noite' : 'Dia'}
               </div>
             </button>
 

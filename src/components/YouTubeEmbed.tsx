@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { Play, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useVibrate } from '../hooks/useVibrate';
 
 interface YouTubeEmbedProps {
@@ -18,125 +18,50 @@ export function YouTubeEmbed({
   title,
   channel,
   duration,
-  onProgress,
   onComplete,
   dayNumber,
   isNightMode,
 }: YouTubeEmbedProps) {
   const { vibrate } = useVibrate();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [watchedPercent, setWatchedPercent] = useState(0);
   const [markedComplete, setMarkedComplete] = useState(false);
-  const progressIntervalRef = useRef<number | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  const handleStateChange = (event: YouTubePlayerEvent) => {
-    // YT.PlayerState: -1 = unstarted, 0 = ended, 1 = playing, 2 = paused, 3 = buffering, 5 = video cued
-    if (event.data === 1) {
-      setIsPlaying(true);
-      startProgressTracking();
-    } else {
-      setIsPlaying(false);
-      stopProgressTracking();
-    }
-    if (event.data === 0) {
-      // Video ended
-      handleVideoEnded();
-    }
-  };
-
-  const startProgressTracking = () => {
-    if (progressIntervalRef.current) return;
-
-    progressIntervalRef.current = window.setInterval(() => {
-      // @ts-expect-error YouTube iframe API
-      const player = window.YT?.get?.(`yt-player-${videoId}`);
-      if (player) {
-        const currentTime = player.getCurrentTime?.() || 0;
-        const totalTime = player.getDuration?.() || 0;
-        const percent = totalTime > 0 ? Math.round((currentTime / totalTime) * 100) : 0;
-        setWatchedPercent(percent);
-        onProgress?.(Math.floor(currentTime), Math.floor(totalTime));
-
-        if (percent >= 90 && !markedComplete) {
-          handleVideoEnded();
-        }
-      }
-    }, 5000); // Update every 5 seconds
-  };
-
-  const stopProgressTracking = () => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-  };
-
-  const handleVideoEnded = () => {
+  const handleMarkComplete = () => {
     if (!markedComplete) {
       setMarkedComplete(true);
       vibrate(100);
       onComplete?.();
     }
-    stopProgressTracking();
-    setWatchedPercent(100);
   };
 
-  useEffect(() => {
-    // Load YouTube IFrame API
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-    }
+  const handlePlayClick = () => {
+    vibrate(30);
+    setShowVideo(true);
+  };
 
-    // Initialize player when API is ready
-    const initPlayer = () => {
-      // @ts-expect-error YouTube API
-      if (window.YT && window.YT.Player) {
-        // @ts-expect-error YouTube API
-        new window.YT.Player(`yt-player-${videoId}`, {
-          events: {
-            onStateChange: handleStateChange,
-            onReady: () => {
-              // Player ready
-            },
-          },
-        });
-      }
-    };
-
-    // @ts-expect-error YouTube API
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      // @ts-expect-error YouTube API
-      window.onYouTubeIframeAPIReady = initPlayer;
-    }
-
-    return () => {
-      stopProgressTracking();
-    };
-  }, [videoId]);
+  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
-    <div className={`rounded-xl overflow-hidden ${isNightMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+    <div className={`rounded-2xl overflow-hidden ${isNightMode ? 'bg-gray-800/80 border border-gray-700/50' : 'bg-white border border-gray-100'} shadow-lg`}>
       {/* Header */}
-      <div className={`p-3 border-b ${isNightMode ? 'border-gray-700' : 'border-gray-100'}`}>
+      <div className={`p-3.5 border-b ${isNightMode ? 'border-gray-700/50' : 'border-gray-100'}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h4 className={`font-medium text-sm ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
+            <h4 className={`font-semibold text-sm leading-snug ${isNightMode ? 'text-white' : 'text-gray-800'}`}>
               {title}
             </h4>
             {channel && (
-              <p className={`text-xs mt-0.5 ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className={`text-xs mt-1 ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 {channel} {duration && `• ${duration}`}
               </p>
             )}
           </div>
           {markedComplete && (
-            <div className="px-2 py-1 bg-green-500 text-white text-xs rounded-full font-medium">
-              ✓
+            <div className="flex items-center gap-1 px-2.5 py-1 bg-green-500 text-white text-xs rounded-full font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Visto
             </div>
           )}
         </div>
@@ -144,68 +69,74 @@ export function YouTubeEmbed({
 
       {/* Video Frame */}
       <div className="relative" style={{ paddingBottom: '56.25%' }}>
-        <iframe
-          id={`yt-player-${videoId}`}
-          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0`}
-          title={title}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-          }}
-          frameBorder="0"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+        {showVideo ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+            title={title}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+            }}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            onError={() => setLoadError(true)}
+          />
+        ) : (
+          <button
+            onClick={handlePlayClick}
+            className="absolute inset-0 w-full h-full group cursor-pointer"
+          >
+            <img
+              src={thumbnailUrl}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+              }}
+            />
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                <Play className="w-7 h-7 text-white ml-1" fill="white" />
+              </div>
+            </div>
+          </button>
+        )}
+
+        {loadError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80">
+            <div className="text-center p-4">
+              <p className="text-white text-sm mb-2">Vídeo indisponível</p>
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs rounded-full font-medium"
+              >
+                Tente novamente mais tarde
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Progress Bar */}
-      {watchedPercent > 0 && watchedPercent < 100 && (
-        <div className={`h-1 ${isNightMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-          <div
-            className="h-full bg-coral-400 transition-all duration-300"
-            style={{ width: `${watchedPercent}%` }}
-          />
-        </div>
-      )}
+      {/* Actions */}
+      <div className={`p-3 flex items-center justify-end ${isNightMode ? 'bg-gray-800/50' : 'bg-gray-50/80'}`}>
 
-      {/* Note */}
-      <div className={`px-3 py-2 ${isNightMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-        <p className={`text-xs ${isNightMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          📝 Vídeo de uma consultora brasileira. Os conceitos aplicam-se na mesma.
-        </p>
+        <button
+          onClick={handleMarkComplete}
+          disabled={markedComplete}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            markedComplete
+              ? 'bg-green-500 text-white'
+              : isNightMode
+                ? 'bg-coral-500/20 text-coral-300 hover:bg-coral-500/30 active:scale-95'
+                : 'bg-coral-100 text-coral-600 hover:bg-coral-200 active:scale-95'
+          }`}
+        >
+          {markedComplete ? '✓ Vídeo visto' : 'Marcar como visto'}
+        </button>
       </div>
     </div>
   );
-}
-
-// Type for YouTube Player events
-interface YouTubePlayerEvent {
-  data: number;
-  target: {
-    getCurrentTime: () => number;
-    getDuration: () => number;
-  };
-}
-
-// Extend window for YT API
-declare global {
-  interface Window {
-    YT: {
-      Player: new (elementId: string, config: {
-        events?: {
-          onStateChange?: (event: YouTubePlayerEvent) => void;
-          onReady?: () => void;
-        };
-      }) => void;
-      PlayerState: {
-        ENDED: number;
-        PLAYING: number;
-        PAUSED: number;
-      };
-    };
-    onYouTubeIframeAPIReady?: () => void;
-  }
 }

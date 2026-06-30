@@ -108,6 +108,7 @@ export interface AudioItem {
 
 // ========== APP STATE ==========
 export interface AppState {
+  onboarding: OnboardingData | null;
   user: UserProfile | null;
   baby: BabyProfile | null;
   currentDay: number;
@@ -121,6 +122,7 @@ export interface AppState {
   lastRitualDate: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  themePreference?: 'auto' | 'dark' | 'light';
 }
 
 // ========== UNIONS ==========

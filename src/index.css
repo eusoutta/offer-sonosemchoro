@@ -1,10 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
   html {
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
@@ -12,7 +57,7 @@
   }
 
   body {
-    @apply antialiased;
+    @apply bg-background text-foreground antialiased;
     overscroll-behavior: none;
     user-select: none;
   }
@@ -31,8 +76,52 @@
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);
   }
+
+  /* Premium glass effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-dark {
+    background: rgba(30, 30, 40, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Premium gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #F8859A 0%, #F45B7D 50%, #E83D61 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Premium card shadow */
+  .shadow-premium {
+    box-shadow: 0 4px 24px -4px rgba(244, 91, 125, 0.12),
+                0 2px 8px -2px rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow-premium-dark {
+    box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4),
+                0 2px 8px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Glow effects */
+  .glow-coral {
+    box-shadow: 0 0 20px rgba(248, 133, 154, 0.3),
+                0 0 40px rgba(248, 133, 154, 0.1);
+  }
+
+  .glow-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3),
+                0 0 40px rgba(34, 197, 94, 0.1);
+  }
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar {
   display: none;
 }
@@ -42,10 +131,77 @@
   -ms-overflow-style: none;
 }
 
-input:focus {
+input:focus,
+textarea:focus {
   outline: none;
 }
 
 button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Premium gradient backgrounds */
+.bg-gradient-warm {
+  background: linear-gradient(135deg, #FFF9F8 0%, #FEF7F8 50%, #FEECEF 100%);
+}
+
+.bg-gradient-night {
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+/* Animated gradient for main CTA */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Stagger animations for lists */
+.stagger-item {
+  opacity: 0;
+  animation: stagger-fade-in 0.4s ease forwards;
+}
+
+@keyframes stagger-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Premium text content formatting */
+.content-text {
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
+
+.content-text p {
+  margin-bottom: 1rem;
+}
+
+/* Night mode body gradient */
+.night-body {
+  background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(248, 133, 154, 0.1) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }

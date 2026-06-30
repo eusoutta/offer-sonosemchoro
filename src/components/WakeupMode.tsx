@@ -3,7 +3,8 @@ import { Moon, Play, Pause, Volume2, X, Check, ArrowRight } from 'lucide-react';
 import type { WakeupEntry, ResolvedStep, BabyAge } from '../lib/types';
 import { useVibrate } from '../hooks/useVibrate';
 import { useTimer, formatTime } from '../hooks/useTimer';
-import { generateId } from '../lib/storage';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface WakeupModeProps {
   babyName: string;
@@ -30,7 +31,7 @@ export function WakeupMode({
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   useEffect(() => {
-    document.body.style.backgroundColor = '#000';
+    document.body.style.backgroundColor = '#0F0F1A'; // night-900 for deep night mode
     return () => { document.body.style.backgroundColor = ''; };
   }, []);
 
@@ -71,22 +72,23 @@ export function WakeupMode({
     }
   };
 
-  const handleResolved = (resolvedAt: ResolvedStep) => {
+  const handleResolved = (resolved_step: ResolvedStep) => {
     vibrate(100);
-    handleCompleteWakeup(resolvedAt);
+    handleCompleteWakeup(resolved_step);
   };
 
-  const handleCompleteWakeup = (resolvedStep: ResolvedStep) => {
+  const handleCompleteWakeup = (resolved_step: ResolvedStep) => {
     const now = Date.now();
     const durationSeconds = Math.floor((now - startTime) / 1000);
 
     const wakeup: WakeupEntry = {
-      id: generateId(),
+      id: crypto.randomUUID(),
+      user_id: 'local',
+      day_number: currentDay,
       timestamp: new Date(startTime).toISOString(),
-      resolvedAt: new Date(now).toISOString(),
-      resolvedStep,
-      durationSeconds,
-      day: currentDay,
+      resolved_at: new Date().toISOString(),
+      resolved_step,
+      duration_seconds: durationSeconds,
       date: new Date().toISOString().split('T')[0],
     };
 
@@ -109,211 +111,233 @@ export function WakeupMode({
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col px-6 py-8">
-      <button onClick={onExit} className="absolute top-4 right-4 p-2 text-gray-500">
+    <div className="min-h-screen bg-night-900 text-white flex flex-col justify-center items-center px-4 py-8">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={onExit} 
+        className="absolute top-4 right-4 text-gray-400 hover:text-white"
+      >
         <X className="w-6 h-6" />
-      </button>
+      </Button>
 
-      {/* Step 0 */}
-      {step === 0 && (
-        <div className="flex-1 flex flex-col justify-center items-center animate-fade-in">
-          <Moon className="w-16 h-16 text-coral-400 mb-8" />
-          <h1 className="text-2xl font-semibold text-center mb-4">Respira.</h1>
-          <p className="text-xl text-center text-gray-300 mb-8">
-            Estamos aqui. Vamos passar por isto juntas.
-          </p>
-          <button
-            onClick={handleStartWakeup}
-            className="w-full max-w-sm py-5 rounded-xl font-bold text-xl bg-coral-400 text-black active:scale-95 transition-all"
-          >
-            {babyName} acordou
-          </button>
-        </div>
-      )}
-
-      {/* Step 1 - Pausa Consciente */}
-      {step === 1 && (
-        <div className="flex-1 flex flex-col justify-center items-center animate-fade-in">
-          <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-4">Passo 1: Pausa Consciente</h2>
-            <p className="text-lg text-gray-300 mb-4">
-              Espera <span className="text-coral-400 font-bold">30 segundos</span> antes de te aproximares.
+      <Card className="w-full max-w-md bg-night-800 border-night-700 text-white shadow-2xl">
+        {/* Step 0 */}
+        {step === 0 && (
+          <CardContent className="flex flex-col items-center pt-10 pb-8 animate-in fade-in">
+            <Moon className="w-16 h-16 text-primary mb-6" />
+            <h1 className="text-2xl font-bold text-center mb-2">Respira.</h1>
+            <p className="text-center text-gray-400 mb-8 px-4">
+              Estamos aqui. Vamos passar por isto juntas.
             </p>
-            <p className="text-base text-gray-400">Muitas vezes ele volta a adormecer sozinho.</p>
-          </div>
-
-          <div className="w-40 h-40 rounded-full border-4 border-coral-400 flex items-center justify-center mb-8">
-            <span className="text-5xl font-bold">{seconds}</span>
-          </div>
-
-          <div className="w-full max-w-sm space-y-3">
-            <button
-              onClick={handleSlept}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-green-500 text-white flex items-center justify-center gap-2"
+            <Button
+              size="lg"
+              className="w-full h-14 text-lg font-bold"
+              onClick={handleStartWakeup}
             >
-              <Check className="w-5 h-5" /> Adormeceu sozinho
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-coral-400 text-black flex items-center justify-center gap-2"
-            >
-              Continua acordado <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
+              {babyName} acordou
+            </Button>
+          </CardContent>
+        )}
 
-      {/* Step 2 - Presenca Fisica */}
-      {step === 2 && (
-        <div className="flex-1 flex flex-col justify-center items-center animate-fade-in">
-          <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-4">Passo 2: Presenca Fisica</h2>
-            <p className="text-lg text-gray-300 mb-4">Aproxima-te. Mae no peito dele.</p>
-            <p className="text-base text-gray-400">
-              Diz baixinho: "<span className="text-white">mama esta aqui</span>". Nao pegues ao colo.
-            </p>
-          </div>
+        {/* Step 1 - Pausa Consciente */}
+        {step === 1 && (
+          <>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">Passo 1: Pausa Consciente</CardTitle>
+              <CardDescription className="text-gray-400">
+                Espera <span className="text-primary font-bold">30 segundos</span> antes de te aproximares.
+                Muitas vezes ele volta a adormecer sozinho.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center pt-4 pb-6">
+              <div className="w-32 h-32 rounded-full border-4 border-primary flex items-center justify-center mb-8 bg-night-900/50">
+                <span className="text-5xl font-bold text-white">{seconds}</span>
+              </div>
+              <div className="w-full space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                  onClick={handleSlept}
+                >
+                  <Check className="w-5 h-5 mr-2" /> Adormeceu sozinho
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-14 border-night-600 bg-night-700 hover:bg-night-600 text-white font-semibold"
+                  onClick={handleNext}
+                >
+                  Continua acordado <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        )}
 
-          <button
-            onClick={toggleAudio}
-            className="w-full max-w-sm py-4 rounded-xl font-medium text-base bg-gray-800 border-2 border-gray-700 flex items-center justify-center gap-2 mb-8"
-          >
-            {audioPlaying ? (
-              <><Pause className="w-5 h-5" /> Pausar audio-guia</>
-            ) : (
-              <><Volume2 className="w-5 h-5" /> Ouvir audio-guia (90s)</>
-            )}
-          </button>
+        {/* Step 2 - Presenca Fisica */}
+        {step === 2 && (
+          <>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">Passo 2: Presença Física</CardTitle>
+              <CardDescription className="text-gray-400">
+                Aproxima-te. Diz baixinho: "a mamã está aqui". Não pegues ao colo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center pt-4 pb-6">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full mb-8 h-14"
+                onClick={toggleAudio}
+              >
+                {audioPlaying ? (
+                  <><Pause className="w-5 h-5 mr-2" /> Pausar áudio</>
+                ) : (
+                  <><Volume2 className="w-5 h-5 mr-2" /> Ouvir áudio-guia (90s)</>
+                )}
+              </Button>
+              <div className="w-full space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                  onClick={() => handleResolved(2)}
+                >
+                  <Check className="w-5 h-5 mr-2" /> Acalmou
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-14 border-night-600 bg-night-700 hover:bg-night-600 text-white font-semibold"
+                  onClick={handleNext}
+                >
+                  Continua a chorar <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        )}
 
-          <div className="w-full max-w-sm space-y-3">
-            <button
-              onClick={() => handleResolved(2)}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-green-500 text-white flex items-center justify-center gap-2"
-            >
-              <Check className="w-5 h-5" /> Acalmou
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-coral-400 text-black flex items-center justify-center gap-2"
-            >
-              Continua a chorar <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
+        {/* Step 3 - Embalo sem Colo */}
+        {step === 3 && (
+          <>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">Passo 3: Embalo sem Colo</CardTitle>
+              <CardDescription className="text-gray-400">
+                Mão suave no peito, ritmo lento. 2 minutos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center pt-4 pb-6">
+              <div className="w-32 h-32 rounded-full border-4 border-primary flex items-center justify-center mb-6 bg-night-900/50">
+                <span className="text-4xl font-bold text-white">{formatTime(seconds)}</span>
+              </div>
+              <div className="flex gap-4 mb-8">
+                {!isRunning ? (
+                  <Button size="icon" className="w-14 h-14 rounded-full" onClick={start}>
+                    <Play className="w-6 h-6" />
+                  </Button>
+                ) : (
+                  <Button size="icon" variant="secondary" className="w-14 h-14 rounded-full" onClick={pause}>
+                    <Pause className="w-6 h-6" />
+                  </Button>
+                )}
+                <Button size="icon" variant="outline" className="w-14 h-14 rounded-full border-night-600 bg-night-700 hover:bg-night-600 text-gray-400" onClick={() => reset(0)}>
+                  <X className="w-6 h-6" />
+                </Button>
+              </div>
+              <div className="w-full space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                  onClick={() => handleResolved(3)}
+                >
+                  <Check className="w-5 h-5 mr-2" /> Adormeceu
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-14 border-night-600 bg-night-700 hover:bg-night-600 text-white font-semibold"
+                  onClick={handleNext}
+                >
+                  Próximo passo <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        )}
 
-      {/* Step 3 - Embalo sem Colo */}
-      {step === 3 && (
-        <div className="flex-1 flex flex-col justify-center items-center animate-fade-in">
-          <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-4">Passo 3: Embalo sem Colo</h2>
-            <p className="text-lg text-gray-300 mb-4">Embala-o onde esta.</p>
-            <p className="text-base text-gray-400">Mae suave no peito, ritmo lento. 2 minutos.</p>
-          </div>
+        {/* Step 4 - Oferta de Agua */}
+        {step === 4 && babyAge !== '0-6m' && (
+          <>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">Passo 4: Oferta de Água</CardTitle>
+              <CardDescription className="text-gray-400">
+                Oferece o copo de água. Se aceitar = era hábito. Se recusar = passa adiante.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center pt-4 pb-6">
+              <div className="w-full space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                  onClick={() => handleResolved(4)}
+                >
+                  <Check className="w-5 h-5 mr-2" /> Aceitou e acalmou
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-14 border-night-600 bg-night-700 hover:bg-night-600 text-white font-semibold"
+                  onClick={handleNext}
+                >
+                  Recusou / Chora <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        )}
 
-          <div className="w-40 h-40 rounded-full border-4 border-coral-400 flex items-center justify-center mb-8">
-            <span className="text-4xl font-bold">{formatTime(seconds)}</span>
-          </div>
-
-          <div className="flex gap-4 mb-8">
-            {!isRunning ? (
-              <button onClick={start} className="w-14 h-14 rounded-full bg-coral-400 flex items-center justify-center">
-                <Play className="w-6 h-6 text-black" />
-              </button>
-            ) : (
-              <button onClick={pause} className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center">
-                <Pause className="w-6 h-6 text-white" />
-              </button>
-            )}
-            <button onClick={() => reset(0)} className="w-14 h-14 rounded-full bg-gray-800 flex items-center justify-center">
-              <X className="w-6 h-6 text-gray-400" />
-            </button>
-          </div>
-
-          <div className="w-full max-w-sm space-y-3">
-            <button
-              onClick={() => handleResolved(3)}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-green-500 text-white flex items-center justify-center gap-2"
-            >
-              <Check className="w-5 h-5" /> Adormeceu
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-coral-400 text-black flex items-center justify-center gap-2"
-            >
-              Proximo passo <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 4 - Oferta de Agua (condicional) */}
-      {step === 4 && babyAge !== '0-6m' && (
-        <div className="flex-1 flex flex-col justify-center items-center animate-fade-in">
-          <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-4">Passo 4: Oferta de Agua</h2>
-            <p className="text-lg text-gray-300 mb-4">Oferece o copo de agua.</p>
-            <p className="text-base text-gray-400">
-              Se aceitar = era habito de succao. Se recusar = passa adiante.
-            </p>
-          </div>
-
-          <div className="w-full max-w-sm space-y-3">
-            <button
-              onClick={() => handleResolved(4)}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-green-500 text-white flex items-center justify-center gap-2"
-            >
-              <Check className="w-5 h-5" /> Aceitou
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-full py-4 rounded-xl font-semibold text-lg bg-coral-400 text-black flex items-center justify-center gap-2"
-            >
-              Recusou <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 5 - Mama Consciente */}
-      {step === 5 && (
-        <div className="flex-1 flex flex-col justify-center items-center animate-fade-in">
-          <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-4">Passo 5: Mama Consciente</h2>
-            <p className="text-lg text-gray-300 mb-4">Esta bem. Mama em modo consciente.</p>
-            <ul className="text-base text-gray-400 text-left space-y-2 mb-4">
-              <li>- Luz apagada</li>
-              <li>- Sem falar</li>
-              <li>- Sem embalar</li>
-              <li>- Mama curta</li>
-              <li>- Volta a deitar antes de ele adormecer totalmente</li>
-            </ul>
-          </div>
-
-          <div className="w-40 h-40 rounded-full border-4 border-coral-400 flex items-center justify-center mb-8">
-            <span className="text-4xl font-bold">{formatTime(seconds)}</span>
-          </div>
-
-          <div className="flex gap-4 mb-8">
-            {!isRunning ? (
-              <button onClick={start} className="w-14 h-14 rounded-full bg-coral-400 flex items-center justify-center">
-                <Play className="w-6 h-6 text-black" />
-              </button>
-            ) : (
-              <button onClick={pause} className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center">
-                <Pause className="w-6 h-6 text-white" />
-              </button>
-            )}
-          </div>
-
-          <button
-            onClick={() => handleResolved(5)}
-            className="w-full max-w-sm py-4 rounded-xl font-semibold text-lg bg-coral-400 text-black"
-          >
-            Concluido
-          </button>
-        </div>
-      )}
+        {/* Step 5 - Mama Consciente */}
+        {step === 5 && (
+          <>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">Passo 5: Mama Consciente</CardTitle>
+              <CardDescription className="text-gray-400 text-left">
+                Está bem. Mama em modo consciente:
+                <ul className="mt-2 ml-4 list-disc space-y-1">
+                  <li>Luz apagada</li>
+                  <li>Sem falar</li>
+                  <li>Mama curta</li>
+                  <li>Volta a deitar antes de ele adormecer totalmente</li>
+                </ul>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center pt-4 pb-6">
+              <div className="w-32 h-32 rounded-full border-4 border-primary flex items-center justify-center mb-6 bg-night-900/50">
+                <span className="text-4xl font-bold text-white">{formatTime(seconds)}</span>
+              </div>
+              <div className="flex gap-4 mb-8">
+                {!isRunning ? (
+                  <Button size="icon" className="w-14 h-14 rounded-full" onClick={start}>
+                    <Play className="w-6 h-6" />
+                  </Button>
+                ) : (
+                  <Button size="icon" variant="secondary" className="w-14 h-14 rounded-full" onClick={pause}>
+                    <Pause className="w-6 h-6" />
+                  </Button>
+                )}
+              </div>
+              <Button
+                size="lg"
+                className="w-full h-14 font-semibold"
+                onClick={() => handleResolved(5)}
+              >
+                Concluído
+              </Button>
+            </CardContent>
+          </>
+        )}
+      </Card>
     </div>
   );
 }
